@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Help Centre</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { margin: 0; background-color: #0a0a0a; }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+
+  <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script>window.react = window.React;</script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide-react@0.344.0/dist/umd/lucide-react.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.23.6/babel.min.js"></script>
+</head>
+
+<body class="text-white select-none">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+    const { createRoot } = ReactDOM;
+
+    const lucideIcons = window.lucideReact || window.LucideReact || new Proxy({}, { get: () => () => null });
+    const { ChevronLeft, Search, MessageSquare, Phone, Image: ImageIcon, CreditCard, LifeBuoy, ChevronDown } = lucideIcons;
+
+    const FAQItem = ({ question, answer }) => {
+      const [open, setOpen] = useState(false);
+      return (
+        <div className="border-b border-white/5">
+          <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between p-4 text-left hover:bg-white/5 transition" aria-expanded={open}>
+            <span className="text-white font-semibold text-[15px]">{question}</span>
+            <ChevronDown size={18} className={`text-neutral-500 transition-transform ${open ? 'rotate-180' : ''}`} />
+          </button>
+          {open && <div className="px-4 pb-4 text-neutral-400 text-sm leading-relaxed">{answer}</div>}
+        </div>
+      );
+    };
+
+    function App() {
+      return (
+        <div className="flex justify-center items-center h-screen bg-neutral-900 w-full font-sans overflow-hidden touch-none">
+          <div className="w-full h-full max-w-md bg-[#0a0a0a] relative shadow-2xl flex flex-col">
+
+            <div className="sticky top-0 z-40 px-4 py-4 flex justify-between items-center border-b border-white/5 bg-neutral-900/80 backdrop-blur-xl shrink-0">
+              <button onClick={() => window.location.href='index.html'} className="text-white p-2 bg-white/5 rounded-full hover:bg-white/10 transition" aria-label="Back">
+                <ChevronLeft size={24} />
+              </button>
+              <h1 className="text-lg font-bold text-white tracking-wide">Help Centre</h1>
+              <div className="w-10"></div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto pb-10 scrollbar-hide">
+              <div className="px-5 pt-8 pb-4">
+                <h2 className="text-3xl font-black text-white mb-2 tracking-tight">How can we help?</h2>
+                <p className="text-neutral-500 text-sm">Search FAQs or browse common topics.</p>
+              </div>
+
+              <div className="px-4 pb-6">
+                <div className="bg-neutral-900/60 rounded-2xl border border-white/5 p-3 flex items-center gap-3">
+                  <Search size={18} className="text-neutral-500" />
+                  <input className="bg-transparent outline-none text-white w-full" placeholder="Search help articles..." />
+                </div>
+              </div>
+
+              <div className="px-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-neutral-900/40 border border-white/5 p-4 rounded-3xl flex flex-col items-center justify-center gap-2 hover:bg-white/5 transition-colors cursor-pointer text-center">
+                    <MessageSquare size={24} className="text-pink-400" />
+                    <span className="text-white font-medium text-sm">Chat & Memory</span>
+                  </div>
+                  <div className="bg-neutral-900/40 border border-white/5 p-4 rounded-3xl flex flex-col items-center justify-center gap-2 hover:bg-white/5 transition-colors cursor-pointer text-center">
+                    <Phone size={24} className="text-green-400" />
+                    <span className="text-white font-medium text-sm">Voice Calls</span>
+                  </div>
+                  <div className="bg-neutral-900/40 border border-white/5 p-4 rounded-3xl flex flex-col items-center justify-center gap-2 hover:bg-white/5 transition-colors cursor-pointer text-center">
+                    <ImageIcon size={24} className="text-purple-400" />
+                    <span className="text-white font-medium text-sm">Photos & Gallery</span>
+                  </div>
+                  <div className="bg-neutral-900/40 border border-white/5 p-4 rounded-3xl flex flex-col items-center justify-center gap-2 hover:bg-white/5 transition-colors cursor-pointer text-center">
+                    <CreditCard size={24} className="text-yellow-400" />
+                    <span className="text-white font-medium text-sm">Billing & Plans</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="px-4 mt-6">
+                <h3 className="text-sm font-bold text-neutral-500 uppercase tracking-wider mb-3 px-2">Top Questions</h3>
+                <div className="bg-neutral-900/40 rounded-3xl border border-white/5 overflow-hidden">
+                  <FAQItem
+                    question="Does PixelCrush allow explicit content?"
+                    answer="No. PixelCrush is a strictly SFW companion experience. Explicit sexual content is not supported, and some requests may be refused for safety."
+                  />
+                  <FAQItem
+                    question="What happens if I hit my monthly limit?"
+                    answer="You can upgrade your plan or wait until your monthly reset date. Voice calls may also have a daily cap depending on plan and safety settings."
+                  />
+                  <FAQItem
+                    question="Why did my character forget something?"
+                    answer="Continuity depends on context and memory limits. Higher plans support longer continuity and more memory depth, but no system can recall everything perfectly."
+                  />
+                  <FAQItem
+                    question="How do voice calls work?"
+                    answer="Tap the green phone icon to start a call. Voice calls use your monthly voice minutes. Calls are processed securely."
+                  />
+                  <FAQItem
+                    question="Can I cancel my subscription anytime?"
+                    answer="Yes. You can cancel from Billing > Manage Plan. If you cancel, you keep paid features until the end of your billing cycle."
+                  />
+                  <FAQItem
+                    question="Are the photos real people?"
+                    answer="No. All images are AI-generated and do not represent real individuals."
+                  />
+                </div>
+              </div>
+
+              <div className="px-4 mt-8 mb-4">
+                <div className="bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/20 rounded-3xl p-5 flex items-center justify-between">
+                  <div>
+                    <h4 className="text-white font-bold text-[16px]">Still need help?</h4>
+                    <p className="text-neutral-400 text-xs mt-1">Our team usually replies in 24h.</p>
+                  </div>
+                  <button className="bg-white text-black font-bold px-4 py-2.5 rounded-full text-sm hover:scale-105 transition-transform flex items-center gap-2">
+                    <LifeBuoy size={16} /> Contact
+                  </button>
+                </div>
+              </div>
+
+              <div className="h-6" />
+            </div>
+
+          </div>
+        </div>
+      );
+    }
+
+    createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
