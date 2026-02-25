@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Notifications</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { margin: 0; background-color: #0a0a0a; }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+
+  <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script>window.react = window.React;</script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide-react@0.344.0/dist/umd/lucide-react.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.23.6/babel.min.js"></script>
+</head>
+
+<body class="text-white select-none">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+    const { createRoot } = ReactDOM;
+
+    const lucideIcons = window.lucideReact || window.LucideReact || new Proxy({}, { get: () => () => null });
+    const { ChevronLeft, Bell, Sparkles, MessageSquare, Shield, Clock, CreditCard } = lucideIcons;
+
+    const Toggle = ({ enabled, onChange }) => (
+      <button
+        onClick={onChange}
+        className={`w-14 h-8 rounded-full p-1 transition flex items-center ${enabled ? 'bg-pink-500/80' : 'bg-white/10'}`}
+        aria-label="Toggle"
+      >
+        <div className={`w-6 h-6 rounded-full bg-white transition transform ${enabled ? 'translate-x-6' : 'translate-x-0'}`} />
+      </button>
+    );
+
+    const Row = ({ icon, title, desc, enabled, setEnabled, last }) => (
+      <div className={`flex items-center justify-between p-4 ${last ? '' : 'border-b border-white/5'}`}>
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
+            {icon}
+          </div>
+          <div>
+            <p className="text-white font-semibold">{title}</p>
+            <p className="text-neutral-500 text-xs mt-0.5">{desc}</p>
+          </div>
+        </div>
+        <Toggle enabled={enabled} onChange={() => setEnabled(!enabled)} />
+      </div>
+    );
+
+    function App() {
+      const [messageNotifs, setMessageNotifs] = useState(true);
+      const [newFeatures, setNewFeatures] = useState(true);
+      const [security, setSecurity] = useState(true);
+      const [promos, setPromos] = useState(false);
+
+      const [usageAlerts, setUsageAlerts] = useState(true);
+      const [billingAlerts, setBillingAlerts] = useState(true);
+
+      const [quietMode, setQuietMode] = useState(false);
+
+      return (
+        <div className="flex justify-center items-center h-screen bg-neutral-900 w-full font-sans overflow-hidden touch-none">
+          <div className="w-full h-full max-w-md bg-[#0a0a0a] relative shadow-2xl flex flex-col">
+
+            <div className="sticky top-0 z-40 px-4 py-4 flex justify-between items-center border-b border-white/5 bg-neutral-900/80 backdrop-blur-xl shrink-0">
+              <button onClick={() => window.location.href='index.html'} className="text-white p-2 bg-white/5 rounded-full hover:bg-white/10 transition" aria-label="Back">
+                <ChevronLeft size={24} />
+              </button>
+              <h1 className="text-lg font-bold text-white tracking-wide">Notifications</h1>
+              <div className="w-10"></div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto pb-10 scrollbar-hide">
+
+              <div className="px-5 pt-8 pb-4">
+                <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-4 border border-white/5">
+                  <Bell size={24} className="text-white" />
+                </div>
+                <h2 className="text-3xl font-black text-white mb-2 tracking-tight">Stay in the loop</h2>
+                <p className="text-neutral-500 text-sm">Control what we notify you about.</p>
+              </div>
+
+              {/* Quiet Mode */}
+              <div className="px-4 mb-6">
+                <div className="bg-neutral-900/40 border border-white/10 rounded-3xl p-5 flex items-center justify-between">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
+                      <Clock size={20} className="text-neutral-200" />
+                    </div>
+                    <div>
+                      <p className="text-white font-bold">Quiet Mode</p>
+                      <p className="text-neutral-500 text-xs mt-0.5">Pause non-critical notifications.</p>
+                      <p className="text-neutral-600 text-[11px] mt-1">Critical security and billing alerts may still be sent.</p>
+                    </div>
+                  </div>
+                  <Toggle enabled={quietMode} onChange={() => setQuietMode(!quietMode)} />
+                </div>
+              </div>
+
+              {/* Preferences */}
+              <div className="px-4">
+                <h3 className="text-sm font-bold text-neutral-500 uppercase tracking-wider mb-3 px-2">Preferences</h3>
+                <div className="bg-neutral-900/40 rounded-3xl border border-white/5 overflow-hidden">
+                  <Row icon={<MessageSquare size={18} className="text-pink-400" />} title="Messages" desc="New replies and chat activity." enabled={messageNotifs} setEnabled={setMessageNotifs} />
+                  <Row icon={<Sparkles size={18} className="text-purple-400" />} title="New Features" desc="Product improvements and releases." enabled={newFeatures} setEnabled={setNewFeatures} />
+                  <Row icon={<Shield size={18} className="text-green-400" />} title="Security" desc="Login alerts and account security changes." enabled={security} setEnabled={setSecurity} />
+                  <Row icon={<Bell size={18} className="text-neutral-300" />} title="Promos & Updates" desc="Plan updates and product announcements." enabled={promos} setEnabled={setPromos} last />
+                </div>
+              </div>
+
+              {/* Important alerts */}
+              <div className="px-4 mt-6">
+                <h3 className="text-sm font-bold text-neutral-500 uppercase tracking-wider mb-3 px-2">Important alerts</h3>
+                <div className="bg-neutral-900/40 rounded-3xl border border-white/5 overflow-hidden">
+                  <Row icon={<Sparkles size={18} className="text-yellow-300" />} title="Usage Alerts" desc="When you’re nearing monthly limits." enabled={usageAlerts} setEnabled={setUsageAlerts} />
+                  <Row icon={<CreditCard size={18} className="text-yellow-400" />} title="Billing Alerts" desc="Renewals, payment failures, and receipts." enabled={billingAlerts} setEnabled={setBillingAlerts} last />
+                </div>
+              </div>
+
+              <div className="h-8" />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
