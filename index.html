@@ -55,7 +55,7 @@
         price: 0,
         accent: "neutral",
         allowances: { messages: 1500, images: 25, videos: 0, voiceMins: 5, ttsChars: 4000 },
-        cta: "Current Plan",
+        cta: "Select Plan",
         featured: false,
       },
       Plus: {
@@ -143,7 +143,7 @@
         { id: 'c5', title: "Chapter 5", messages: 1, date: "Feb 6", isCurrent: false },
       ];
 
-      // Gallery now uses entitlement/usage gating, not token costs
+      // Gallery uses entitlement/usage gating, not token costs
       const galleryList = [
         { id: 'g1', type: 'unlocked', img: profiles[0].image, persona: 'Lila', isVideo: true },
         { id: 'g2', type: 'locked', img: profiles[1].image, persona: 'Aria', requiredTier: 'Plus', lockReason: 'Plan required' },
@@ -184,15 +184,12 @@
         return tierRank[currentPlan] >= tierRank[requiredTier];
       };
 
-      const UsagePill = () => (
+      const AuthPill = () => (
         <div
           onClick={() => setView('plans')}
-          className="flex items-center gap-2 bg-neutral-900/80 backdrop-blur-md border border-neutral-700 px-3 py-1.5 rounded-full cursor-pointer hover:bg-neutral-800 transition"
+          className="flex items-center justify-center bg-neutral-900/80 backdrop-blur-md border border-neutral-700 px-4 py-1.5 rounded-full cursor-pointer hover:bg-neutral-800 transition"
         >
-          <Crown size={14} className="text-pink-400" />
-          <span className="text-white font-bold text-[11px] tracking-wide">{currentPlan}</span>
-          <span className="text-neutral-400 text-[10px]">•</span>
-          <span className="text-white text-[10px] font-medium">Voice {usage.voiceMins}/{planMeta.allowances.voiceMins}m</span>
+          <span className="text-white font-bold text-xs tracking-wide">LOGIN / SIGN-UP</span>
         </div>
       );
 
@@ -267,37 +264,6 @@
               </div>
             </div>
 
-            {/* Current plan + usage summary */}
-            <div className="bg-neutral-900/60 border border-white/10 rounded-3xl p-5 backdrop-blur-sm relative overflow-hidden shadow-lg">
-              <div className="absolute -right-10 -top-10 w-32 h-32 bg-purple-600/10 rounded-full blur-2xl pointer-events-none" />
-
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Crown size={18} className="text-pink-400" />
-                    <h2 className="text-white font-bold text-lg">{currentPlan} Plan</h2>
-                  </div>
-                  <p className="text-neutral-400 text-xs mt-1">Renews on {renewalDate}</p>
-                </div>
-                <button className="px-4 py-2 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white text-xs font-bold shadow-[0_4px_15px_rgba(236,72,153,0.25)] hover:scale-105 transition-transform">
-                  Manage
-                </button>
-              </div>
-
-              <div className="flex flex-col gap-4 relative z-10">
-                <ProgressRow label="Messages" used={usage.messages} total={planMeta.allowances.messages} />
-                <ProgressRow label="Images" used={usage.images} total={planMeta.allowances.images} />
-                <ProgressRow label="Video Moments" used={usage.videos} total={planMeta.allowances.videos} />
-                <ProgressRow label="Voice Minutes" used={usage.voiceMins} total={planMeta.allowances.voiceMins} />
-                <ProgressRow label="TTS Characters" used={usage.ttsChars} total={planMeta.allowances.ttsChars} />
-              </div>
-
-              <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between text-xs">
-                <span className="text-neutral-400">Today’s voice usage</span>
-                <span className="text-white font-medium">{voiceDailyUsed} / {voiceDailyCap} mins</span>
-              </div>
-            </div>
-
             {/* Usage policy / cap behavior */}
             <div className="bg-neutral-900/40 border border-white/10 rounded-3xl p-5 backdrop-blur-sm">
               <div className="flex items-center gap-2 mb-3">
@@ -319,7 +285,7 @@
                 <h3 className="text-white font-bold text-sm">Choose a plan</h3>
               </div>
               <p className="text-neutral-400 text-xs mb-4">
-                Subscription plans include monthly allowances for chat, images, voice calls, and more.
+                Choose a monthly plan for chat, images, voice calls, and more.
               </p>
 
               <div className="flex flex-col gap-4">
@@ -380,7 +346,7 @@
                         onClick={() => setCurrentPlan(tierKey)}
                         className={`w-full py-3 rounded-xl font-bold transition-colors ${btnClass} ${tier.featured ? 'transition-transform' : ''}`}
                       >
-                        {isCurrent ? "Current Plan" : tier.cta}
+                        {isCurrent && tierKey !== "Free" ? "Current Plan" : tier.cta}
                       </button>
                     </div>
                   );
@@ -406,9 +372,8 @@
                       <span className="text-cyan-400">CRUSH</span>
                       <span className="text-white text-[19px]">.ai</span>
                     </h1>
-                    <span className="text-[10px] text-emerald-300/90 font-semibold tracking-wide mt-1">STRICTLY SFW AI COMPANION</span>
                   </div>
-                  <UsagePill />
+                  <AuthPill />
                 </div>
 
                 <div className="absolute top-24 left-4 right-4 z-30 pointer-events-none px-2">
@@ -495,7 +460,7 @@
                     <span className="text-cyan-400">CRUSH</span>
                     <span className="text-white text-[13px]">.ai</span>
                   </h1>
-                  <UsagePill />
+                  <AuthPill />
                 </div>
 
                 <div className="flex-1 overflow-y-auto pb-4 scrollbar-hide">
@@ -505,13 +470,6 @@
                     <div className="bg-[#1a1a1a] rounded-xl flex items-center p-3.5 border border-white/5">
                       <Search className="text-neutral-500 mr-2" size={18} />
                       <input type="text" placeholder="search stories" className="bg-transparent text-white outline-none w-full text-[15px] placeholder:text-neutral-600" />
-                    </div>
-                  </div>
-
-                  <div className="px-4 pb-5">
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-3 flex items-center justify-between">
-                      <span className="text-xs text-neutral-300">Monthly messages</span>
-                      <span className="text-xs text-white font-semibold">{usage.messages}/{planMeta.allowances.messages}</span>
                     </div>
                   </div>
 
@@ -558,7 +516,7 @@
                     <span className="text-cyan-400">CRUSH</span>
                     <span className="text-white text-[13px]">.ai</span>
                   </h1>
-                  <UsagePill />
+                  <AuthPill />
                 </div>
 
                 <div className="flex items-center justify-between px-4 py-3 bg-neutral-900/40 border-b border-white/5 backdrop-blur-md shrink-0">
@@ -638,14 +596,9 @@
                       <span className="text-neutral-400 text-xs">Online</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-full bg-white/5 border border-white/10">
-                      <span className="text-[10px] text-neutral-300">{usage.messages}/{planMeta.allowances.messages}</span>
-                    </div>
-                    <button onClick={() => setView('voiceCall')} className="p-2.5 rounded-full bg-black/40 backdrop-blur-sm text-green-400 hover:scale-110 transition-transform border border-white/5">
-                      <Phone size={22} />
-                    </button>
-                  </div>
+                  <button onClick={() => setView('voiceCall')} className="p-2.5 rounded-full bg-black/40 backdrop-blur-sm text-green-400 hover:scale-110 transition-transform border border-white/5">
+                    <Phone size={22} />
+                  </button>
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-4 py-6 flex flex-col gap-6 scrollbar-hide">
@@ -708,7 +661,7 @@
                     <span className="text-cyan-400">CRUSH</span>
                     <span className="text-white text-[13px]">.ai</span>
                   </h1>
-                  <UsagePill />
+                  <AuthPill />
                 </div>
 
                 <div className="flex-1 overflow-y-auto pb-4 scrollbar-hide">
@@ -717,20 +670,6 @@
                     <button className="px-4 py-1.5 rounded-full bg-neutral-900/80 border border-white/10 text-neutral-300 text-sm font-bold">
                       Select
                     </button>
-                  </div>
-
-                  {/* Gallery usage strip */}
-                  <div className="px-4 pb-4">
-                    <div className="bg-neutral-900/50 border border-white/10 rounded-xl p-3 grid grid-cols-2 gap-2">
-                      <div className="text-xs">
-                        <span className="text-neutral-400">Images</span>
-                        <p className="text-white font-semibold">{usage.images}/{planMeta.allowances.images}</p>
-                      </div>
-                      <div className="text-xs">
-                        <span className="text-neutral-400">Video Moments</span>
-                        <p className="text-white font-semibold">{usage.videos}/{planMeta.allowances.videos}</p>
-                      </div>
-                    </div>
                   </div>
 
                   <div className="flex gap-2 px-4 pb-6 overflow-x-auto scrollbar-hide">
@@ -984,18 +923,7 @@
                   <div className="w-12" />
                 </div>
 
-                <div className="relative z-10 px-4 -mt-3">
-                  <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 flex items-center justify-between text-xs backdrop-blur-md">
-                    <span className="text-neutral-300">Voice this month</span>
-                    <span className="text-white font-semibold">{usage.voiceMins}/{planMeta.allowances.voiceMins} min</span>
-                  </div>
-                  <div className="mt-2 bg-white/5 border border-white/10 rounded-xl px-3 py-2 flex items-center justify-between text-xs backdrop-blur-md">
-                    <span className="text-neutral-300">Today’s voice cap</span>
-                    <span className="text-white font-semibold">{voiceDailyUsed}/{voiceDailyCap} min</span>
-                  </div>
-                </div>
-
-                <div className="relative z-10 flex-1 flex flex-col items-center justify-center -mt-10">
+                <div className="relative z-10 flex-1 flex flex-col items-center justify-center -mt-16">
                   <div className="relative mb-8">
                     <div className="absolute inset-0 bg-green-500/20 rounded-full animate-ping scale-[1.7]" style={{ animationDuration: '3s' }} />
                     <div className="absolute inset-0 bg-green-500/30 rounded-full animate-ping scale-[1.3]" style={{ animationDuration: '2s', animationDelay: '0.5s' }} />
