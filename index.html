@@ -1,876 +1,1043 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PixelCrush.ai Prototype</title>
-    
-    <!-- Tailwind CSS for Styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Custom Scrollbar Hiding -->
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #171717; /* Neutral 900 */
-        }
-        .scrollbar-hide::-webkit-scrollbar {
-            display: none;
-        }
-        .scrollbar-hide {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>PixelCrush.ai Prototype (SFW)</title>
 
-    <!-- 1. Load React and ReactDOM from highly stable CDN -->
-    <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
-    <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
-    
-    <!-- 2. FIX: Expose React to the global scope as lowercase 'react' BEFORE Lucide loads -->
-    <script>window.react = window.React;</script>
-    
-    <!-- 3. Load Lucide Icons from stable CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/lucide-react@0.344.0/dist/umd/lucide-react.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- 4. Load Babel to compile JSX in the browser -->
-    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.23.6/babel.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #171717;
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+
+  <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script>window.react = window.React;</script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide-react@0.344.0/dist/umd/lucide-react.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.23.6/babel.min.js"></script>
 </head>
 <body class="text-white select-none">
-    
-    <div id="root"></div>
+  <div id="root"></div>
 
-    <!-- The React App (compiled on the fly) -->
-    <script type="text/babel">
-        const { useState } = React;
-        const { createRoot } = ReactDOM;
+  <script type="text/babel">
+    const { useState } = React;
+    const { createRoot } = ReactDOM;
 
-        // FIX: Safely grab the Lucide global variable. 
-        // If the CDN is blocked by an adblocker or fails, fallback to a proxy that returns empty icons 
-        // so the app won't crash with a ReferenceError or white screen!
-        const lucideIcons = window.lucideReact || window.LucideReact || new Proxy({}, { get: () => () => null });
-        
-        const { 
-          Heart, MessageCircle, Share2, Sparkles, Home, Search, 
-          PlusSquare, User, Gift, ImageIcon, ChevronLeft, Phone, 
-          Send, Mic, Video, Settings, ChevronRight, MessageSquare,
-          Crown, CheckCircle2, X, Zap, Lock, LogOut, Bell, Shield, 
-          CreditCard, HelpCircle, UserCircle, PhoneOff, Volume2, MicOff
-        } = lucideIcons;
+    const lucideIcons = window.lucideReact || window.LucideReact || new Proxy({}, { get: () => () => null });
 
-        function App() {
-          // Mock data for AI personas in the Feed
-          const profiles = [
-            {
-              id: 1,
-              name: "Lila",
-              bio: "Local barista by day, chaotic gamer by night. Let's play Valorant?",
-              tags: ["#gamer", "#coffee", "#nightowl"],
-              image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-              likes: "12.4K",
-              status: "online"
-            },
-            {
-              id: 2,
-              name: "Aria",
-              bio: "Always at the beach or at the gym. Looking for someone to motivate me.",
-              tags: ["#fitness", "#beach", "#active"],
-              image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-              likes: "8.9K",
-              status: "offline"
-            },
-            {
-              id: 3,
-              name: "Hannah",
-              bio: "Bookworm and art history nerd. Tell me your favorite museum.",
-              tags: ["#art", "#reading", "#softgirl"],
-              image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-              video: "c34fe8eb-9e20-43ce-a418-8a372bae4d23.mp4",
-              likes: "15.1K",
-              status: "online"
-            }
-          ];
+    const {
+      Heart, MessageCircle, Share2, Sparkles, Home, Search,
+      PlusSquare, User, ImageIcon, ChevronLeft, Phone,
+      Send, Mic, Video, Settings, ChevronRight, MessageSquare,
+      Crown, CheckCircle2, X, Zap, Lock, LogOut, Bell, Shield,
+      CreditCard, HelpCircle, UserCircle, PhoneOff, Volume2, MicOff,
+      ShieldCheck, Clock3, BarChart3
+    } = lucideIcons;
 
-          // Mock data for the "Your Stories" list
-          const storiesList = [
-            { id: 's1', name: "Lila", chapters: "1 chapter", time: "3d ago", image: profiles[0].image },
-            { id: 's2', name: "Hannah", chapters: "1 chapter", time: "4d ago", image: profiles[2].image },
-            { id: 's3', name: "Madison", chapters: "2 chapters", time: "4d ago", image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" },
-            { id: 's4', name: "Zoe", chapters: "2 chapters", time: "5d ago", image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" },
-          ];
+    // ----------------------------
+    // Single source of truth (plans)
+    // ----------------------------
+    const PLAN_CONFIG = {
+      Free: {
+        name: "Free",
+        price: 0,
+        accent: "neutral",
+        allowances: { messages: 1500, images: 25, videos: 0, voiceMins: 5, ttsChars: 4000 },
+        cta: "Current Plan",
+        featured: false,
+      },
+      Plus: {
+        name: "Plus",
+        price: 14.99,
+        accent: "pink",
+        allowances: { messages: 5000, images: 200, videos: 0, voiceMins: 30, ttsChars: 20000 },
+        cta: "Select Plan",
+        featured: false,
+      },
+      Close: {
+        name: "Close",
+        price: 39.99,
+        accent: "purple",
+        allowances: { messages: 10000, images: 500, videos: 5, voiceMins: 120, ttsChars: 50000 },
+        cta: "Upgrade Now",
+        featured: true,
+      },
+      Inner: {
+        name: "Inner",
+        price: 89.99,
+        accent: "yellow",
+        allowances: { messages: 20000, images: 1000, videos: 10, voiceMins: 180, ttsChars: 100000 },
+        cta: "Select Plan",
+        featured: false,
+      }
+    };
 
-          // Mock data for the character's chapter list
-          const chaptersList = [
-            { id: 'c1', title: "Current chapter in progress...", messages: 19, date: "Feb 6", isCurrent: true },
-            { id: 'c2', title: "Helped her track down a half-remembered mystery novel", messages: 7, date: "Feb 6", isCurrent: false },
-            { id: 'c3', title: "Chance meeting at the bookstore", messages: 5, date: "Feb 6", isCurrent: false },
-            { id: 'c4', title: "Chapter 6", messages: 1, date: "Feb 6", isCurrent: false },
-            { id: 'c5', title: "Chapter 5", messages: 1, date: "Feb 6", isCurrent: false },
-          ];
+    const PLAN_ORDER = ["Free", "Plus", "Close", "Inner"];
+    const tierRank = { Free: 0, Plus: 1, Close: 2, Inner: 3 };
 
-          // Mock data for the Gallery
-          const galleryList = [
-            { id: 'g1', type: 'unlocked', img: profiles[0].image, persona: 'Lila', isVideo: true },
-            { id: 'g2', type: 'locked', img: profiles[1].image, persona: 'Aria', cost: 50 },
-            { id: 'g3', type: 'unlocked', img: profiles[2].image, persona: 'Hannah', isVideo: true },
-            { id: 'g4', type: 'locked', img: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80', persona: 'Lila', cost: 100 },
-            { id: 'g5', type: 'locked', img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80', persona: 'Hannah', cost: 75, isVideo: true },
-            { id: 'g6', type: 'unlocked', img: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80', persona: 'Madison' },
-          ];
+    function formatNumber(n) {
+      return n.toLocaleString();
+    }
 
-          const [currentIndex, setCurrentIndex] = useState(0);
-          const [liked, setLiked] = useState(false);
-          const [view, setView] = useState('feed'); 
+    function pct(used, total) {
+      if (!total || total <= 0) return 0;
+      return Math.min(100, Math.round((used / total) * 100));
+    }
 
-          const handleNext = () => {
-            setLiked(false);
-            setCurrentIndex((prev) => (prev + 1) % profiles.length);
-          };
+    function App() {
+      const profiles = [
+        {
+          id: 1,
+          name: "Lila",
+          bio: "Local barista by day, chaotic gamer by night. Want to queue up for a few rounds?",
+          tags: ["#gamer", "#coffee", "#nightowl"],
+          image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          likes: "12.4K",
+          status: "online"
+        },
+        {
+          id: 2,
+          name: "Aria",
+          bio: "Always at the beach or at the gym. Looking for a motivating chat buddy.",
+          tags: ["#fitness", "#beach", "#active"],
+          image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          likes: "8.9K",
+          status: "offline"
+        },
+        {
+          id: 3,
+          name: "Hannah",
+          bio: "Bookworm and art history nerd. Tell me your favorite museum.",
+          tags: ["#art", "#reading", "#softgirl"],
+          image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          video: "c34fe8eb-9e20-43ce-a418-8a372bae4d23.mp4",
+          likes: "15.1K",
+          status: "online"
+        }
+      ];
 
-          const currentProfile = profiles[currentIndex];
+      const storiesList = [
+        { id: 's1', name: "Lila", chapters: "1 chapter", time: "3d ago", image: profiles[0].image },
+        { id: 's2', name: "Hannah", chapters: "1 chapter", time: "4d ago", image: profiles[2].image },
+        { id: 's3', name: "Madison", chapters: "2 chapters", time: "4d ago", image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" },
+        { id: 's4', name: "Zoe", chapters: "2 chapters", time: "5d ago", image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" },
+      ];
 
-          // Reusable Bottom Navigation
-          const BottomNav = () => (
-            <div className="h-16 bg-black border-t border-neutral-800 flex justify-around items-center px-2 z-30 pb-safe shrink-0">
-              <button onClick={() => setView('feed')} className={`flex flex-col items-center gap-1 p-2 transition ${view === 'feed' ? 'text-white' : 'text-neutral-500 hover:text-white'}`}>
-                <Home size={24} />
-                <span className="text-[10px] font-medium">Home</span>
-              </button>
-              
-              <button onClick={() => setView('stories')} className={`flex flex-col items-center gap-1 p-2 transition ${['stories', 'chapters', 'chat'].includes(view) ? 'text-white' : 'text-neutral-500 hover:text-white'}`}>
-                <MessageSquare size={24} />
-                <span className="text-[10px] font-medium">Chats</span>
-              </button>
-              
-              {/* Prominent Center Action Button - OPENS SUBSCRIPTIONS */}
-              <button 
-                onClick={() => setView('subscriptions')}
-                className={`flex items-center justify-center w-12 h-10 rounded-xl transform -translate-y-2 hover:scale-105 transition shadow-[0_0_15px_rgba(236,72,153,0.5)] ${view === 'subscriptions' ? 'bg-gradient-to-r from-pink-400 to-purple-400 ring-2 ring-white' : 'bg-gradient-to-r from-pink-600 to-purple-600'}`}
-              >
-                <Crown size={20} className="text-white fill-white" />
-              </button>
-              
-              <button onClick={() => setView('gallery')} className={`flex flex-col items-center gap-1 p-2 transition ${view === 'gallery' ? 'text-white' : 'text-neutral-500 hover:text-white'}`}>
-                <ImageIcon size={24} />
-                <span className="text-[10px] font-medium">Gallery</span>
-              </button>
-              <button onClick={() => setView('account')} className={`flex flex-col items-center gap-1 p-2 transition ${view === 'account' ? 'text-white' : 'text-neutral-500 hover:text-white'}`}>
-                <User size={24} />
-                <span className="text-[10px] font-medium">Account</span>
-              </button>
+      const chaptersList = [
+        { id: 'c1', title: "Current chapter in progress...", messages: 19, date: "Feb 6", isCurrent: true },
+        { id: 'c2', title: "Helped her track down a half-remembered mystery novel", messages: 7, date: "Feb 6", isCurrent: false },
+        { id: 'c3', title: "Chance meeting at the bookstore", messages: 5, date: "Feb 6", isCurrent: false },
+        { id: 'c4', title: "Chapter 6", messages: 1, date: "Feb 6", isCurrent: false },
+        { id: 'c5', title: "Chapter 5", messages: 1, date: "Feb 6", isCurrent: false },
+      ];
+
+      // Gallery now uses entitlement/usage gating, not token costs
+      const galleryList = [
+        { id: 'g1', type: 'unlocked', img: profiles[0].image, persona: 'Lila', isVideo: true },
+        { id: 'g2', type: 'locked', img: profiles[1].image, persona: 'Aria', requiredTier: 'Plus', lockReason: 'Plan required' },
+        { id: 'g3', type: 'unlocked', img: profiles[2].image, persona: 'Hannah', isVideo: true },
+        { id: 'g4', type: 'locked', img: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80', persona: 'Lila', requiredTier: 'Close', lockReason: 'Plan required' },
+        { id: 'g5', type: 'locked', img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80', persona: 'Hannah', isVideo: true, lockReason: 'Monthly video limit reached' },
+        { id: 'g6', type: 'unlocked', img: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80', persona: 'Madison' },
+      ];
+
+      // Mock logged-in user state for prototype
+      const [currentPlan, setCurrentPlan] = useState("Close");
+      const [renewalDate] = useState("Mar 12");
+      const [voiceDailyCap] = useState(10);
+      const [voiceDailyUsed] = useState(3);
+
+      const [usage, setUsage] = useState({
+        messages: 8240,
+        images: 120,
+        videos: 4,
+        voiceMins: 45,
+        ttsChars: 18200
+      });
+
+      const [currentIndex, setCurrentIndex] = useState(0);
+      const [liked, setLiked] = useState(false);
+      const [view, setView] = useState('feed');
+
+      const currentProfile = profiles[currentIndex];
+      const planMeta = PLAN_CONFIG[currentPlan];
+
+      const handleNext = () => {
+        setLiked(false);
+        setCurrentIndex((prev) => (prev + 1) % profiles.length);
+      };
+
+      const canAccessTier = (requiredTier) => {
+        if (!requiredTier) return true;
+        return tierRank[currentPlan] >= tierRank[requiredTier];
+      };
+
+      const UsagePill = () => (
+        <div
+          onClick={() => setView('plans')}
+          className="flex items-center gap-2 bg-neutral-900/80 backdrop-blur-md border border-neutral-700 px-3 py-1.5 rounded-full cursor-pointer hover:bg-neutral-800 transition"
+        >
+          <Crown size={14} className="text-pink-400" />
+          <span className="text-white font-bold text-[11px] tracking-wide">{currentPlan}</span>
+          <span className="text-neutral-400 text-[10px]">•</span>
+          <span className="text-white text-[10px] font-medium">Voice {usage.voiceMins}/{planMeta.allowances.voiceMins}m</span>
+        </div>
+      );
+
+      const BottomNav = () => (
+        <div className="h-16 bg-black border-t border-neutral-800 flex justify-around items-center px-2 z-30 shrink-0">
+          <button onClick={() => setView('feed')} className={`flex flex-col items-center gap-1 p-2 transition ${view === 'feed' ? 'text-white' : 'text-neutral-500 hover:text-white'}`}>
+            <Home size={24} />
+            <span className="text-[10px] font-medium">Home</span>
+          </button>
+
+          <button onClick={() => setView('stories')} className={`flex flex-col items-center gap-1 p-2 transition ${['stories', 'chapters', 'chat'].includes(view) ? 'text-white' : 'text-neutral-500 hover:text-white'}`}>
+            <MessageSquare size={24} />
+            <span className="text-[10px] font-medium">Chats</span>
+          </button>
+
+          <button
+            onClick={() => setView('plans')}
+            className={`flex flex-col items-center justify-center w-14 h-12 rounded-xl transform -translate-y-2 hover:scale-105 transition shadow-[0_0_15px_rgba(236,72,153,0.5)] ${view === 'plans' ? 'bg-gradient-to-r from-pink-400 to-purple-400 ring-2 ring-white' : 'bg-gradient-to-r from-pink-600 to-purple-600'}`}
+          >
+            <Crown size={18} className="text-white fill-white" />
+            <span className="text-[9px] font-bold mt-0.5 text-white">Plans</span>
+          </button>
+
+          <button onClick={() => setView('gallery')} className={`flex flex-col items-center gap-1 p-2 transition ${view === 'gallery' ? 'text-white' : 'text-neutral-500 hover:text-white'}`}>
+            <ImageIcon size={24} />
+            <span className="text-[10px] font-medium">Gallery</span>
+          </button>
+          <button onClick={() => setView('account')} className={`flex flex-col items-center gap-1 p-2 transition ${view === 'account' ? 'text-white' : 'text-neutral-500 hover:text-white'}`}>
+            <User size={24} />
+            <span className="text-[10px] font-medium">Account</span>
+          </button>
+        </div>
+      );
+
+      const ProgressRow = ({ label, used, total, compact = false }) => {
+        const width = pct(used, total);
+        return (
+          <div>
+            <div className={`flex justify-between ${compact ? 'text-[11px]' : 'text-xs'} mb-1.5`}>
+              <span className="text-neutral-400">{label}</span>
+              <span className="text-white font-medium">{formatNumber(used)} / {formatNumber(total)}</span>
             </div>
-          );
+            <div className="w-full bg-black/50 rounded-full h-2 overflow-hidden border border-white/5">
+              <div className="bg-gradient-to-r from-pink-500 to-purple-500 h-2 rounded-full" style={{ width: `${width}%` }}></div>
+            </div>
+          </div>
+        );
+      };
 
-          return (
-            <div className="flex justify-center items-center h-screen bg-neutral-900 w-full font-sans overflow-hidden touch-none">
-              <div className="w-full h-full max-w-md bg-black relative shadow-2xl overflow-hidden flex flex-col">
-                
-                {view === 'feed' && (
-                  <>
-                    <div className="absolute top-0 left-0 w-full z-20 flex justify-between items-center p-4 bg-gradient-to-b from-black/80 to-transparent">
-                      <div className="flex flex-col">
-                        <h1 className="text-2xl font-black italic tracking-tighter">
-                          <span className="text-pink-500">PIXEL</span>
-                          <span className="text-cyan-400">CRUSH</span>
-                          <span className="text-white text-[19px]">.ai</span>
-                        </h1>
-                      </div>
-                      <div onClick={() => setView('subscriptions')} className="flex items-center justify-center bg-neutral-900/80 backdrop-blur-md border border-neutral-700 px-4 py-1.5 rounded-full cursor-pointer hover:bg-neutral-800 transition">
-                        <span className="text-white font-bold text-xs tracking-wide">LOGIN / SIGN-UP</span>
-                      </div>
-                    </div>
+      const PlansPage = () => (
+        <div className="flex flex-col h-full w-full bg-[#0a0a0a]">
+          <div className="sticky top-0 z-40 px-4 py-4 flex justify-between items-center border-b border-white/5 bg-neutral-900/80 backdrop-blur-xl shrink-0">
+            <button onClick={() => setView('feed')} className="text-neutral-400 hover:text-white transition bg-white/5 p-2 rounded-full">
+              <X size={20} />
+            </button>
+            <h1 className="text-lg font-bold text-white tracking-wide">Plans & Usage</h1>
+            <div className="w-9" />
+          </div>
 
-                    <div className="absolute top-24 left-4 right-4 z-30 pointer-events-none px-2">
-                      <p className="text-white font-bold text-xl text-center leading-snug drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]">
-                        Meet your new AI friend, always there to share experiences
-                      </p>
-                    </div>
+          <div className="flex-1 overflow-y-auto px-4 pt-5 pb-8 scrollbar-hide flex flex-col gap-6">
 
-                    <div className="relative flex-1 bg-neutral-800 cursor-pointer" onClick={handleNext}>
-                      {currentProfile.video ? (
-                        <video src={currentProfile.video} className="w-full h-full object-cover" autoPlay loop muted playsInline />
-                      ) : (
-                        <img src={currentProfile.image} alt={currentProfile.name} className="w-full h-full object-cover" />
+            {/* Trust/SFW banner */}
+            <div className="bg-emerald-500/10 border border-emerald-400/20 rounded-2xl p-4 backdrop-blur-sm">
+              <div className="flex items-start gap-3">
+                <ShieldCheck size={18} className="text-emerald-400 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-white font-semibold text-sm">Strictly SFW companion service</p>
+                  <p className="text-neutral-300 text-xs mt-1 leading-relaxed">
+                    PixelCrush is a subscription-based AI companion product. Explicit sexual content is not supported.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Current plan + usage summary */}
+            <div className="bg-neutral-900/60 border border-white/10 rounded-3xl p-5 backdrop-blur-sm relative overflow-hidden shadow-lg">
+              <div className="absolute -right-10 -top-10 w-32 h-32 bg-purple-600/10 rounded-full blur-2xl pointer-events-none" />
+
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Crown size={18} className="text-pink-400" />
+                    <h2 className="text-white font-bold text-lg">{currentPlan} Plan</h2>
+                  </div>
+                  <p className="text-neutral-400 text-xs mt-1">Renews on {renewalDate}</p>
+                </div>
+                <button className="px-4 py-2 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white text-xs font-bold shadow-[0_4px_15px_rgba(236,72,153,0.25)] hover:scale-105 transition-transform">
+                  Manage
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-4 relative z-10">
+                <ProgressRow label="Messages" used={usage.messages} total={planMeta.allowances.messages} />
+                <ProgressRow label="Images" used={usage.images} total={planMeta.allowances.images} />
+                <ProgressRow label="Video Moments" used={usage.videos} total={planMeta.allowances.videos} />
+                <ProgressRow label="Voice Minutes" used={usage.voiceMins} total={planMeta.allowances.voiceMins} />
+                <ProgressRow label="TTS Characters" used={usage.ttsChars} total={planMeta.allowances.ttsChars} />
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between text-xs">
+                <span className="text-neutral-400">Today’s voice usage</span>
+                <span className="text-white font-medium">{voiceDailyUsed} / {voiceDailyCap} mins</span>
+              </div>
+            </div>
+
+            {/* Usage policy / cap behavior */}
+            <div className="bg-neutral-900/40 border border-white/10 rounded-3xl p-5 backdrop-blur-sm">
+              <div className="flex items-center gap-2 mb-3">
+                <Clock3 size={16} className="text-cyan-400" />
+                <h3 className="text-white font-bold text-sm">Usage policy</h3>
+              </div>
+              <ul className="text-xs text-neutral-300 leading-relaxed space-y-2">
+                <li>• Monthly allowances reset on your billing date.</li>
+                <li>• Voice calls also use a daily safety cap to prevent overuse.</li>
+                <li>• When you hit a limit, you can upgrade or wait for your reset.</li>
+                <li>• Video Moments are limited by plan. Optional add-on video packs may be offered later.</li>
+              </ul>
+            </div>
+
+            {/* Plans */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <BarChart3 size={16} className="text-pink-400" />
+                <h3 className="text-white font-bold text-sm">Choose a plan</h3>
+              </div>
+              <p className="text-neutral-400 text-xs mb-4">
+                Subscription plans include monthly allowances for chat, images, voice calls, and more.
+              </p>
+
+              <div className="flex flex-col gap-4">
+                {PLAN_ORDER.map((tierKey) => {
+                  const tier = PLAN_CONFIG[tierKey];
+                  const isCurrent = currentPlan === tierKey;
+
+                  const cardBase =
+                    "rounded-3xl p-5 backdrop-blur-sm relative overflow-hidden transition-all";
+                  let cardClasses = "bg-neutral-900/40 border border-white/10";
+                  let titleClass = "text-white";
+                  let btnClass = "bg-white/10 text-white hover:bg-white/20";
+
+                  if (tier.accent === "pink") {
+                    cardClasses = "bg-neutral-900/40 border border-pink-500/30 hover:border-pink-500/60";
+                    titleClass = "text-pink-400";
+                    btnClass = "bg-pink-500/10 text-pink-400 border border-pink-500/30 hover:bg-pink-500/20";
+                  }
+                  if (tier.accent === "purple") {
+                    cardClasses = "bg-gradient-to-br from-neutral-900 to-neutral-900 border border-purple-500/60 shadow-[0_0_30px_rgba(168,85,247,0.15)]";
+                    titleClass = "text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400";
+                    btnClass = "bg-gradient-to-r from-pink-600 to-purple-600 text-white shadow-[0_4px_15px_rgba(236,72,153,0.25)] hover:scale-[1.02]";
+                  }
+                  if (tier.accent === "yellow") {
+                    cardClasses = "bg-neutral-900/40 border border-yellow-500/30 hover:border-yellow-500/60";
+                    titleClass = "text-yellow-500";
+                    btnClass = "bg-yellow-500/10 text-yellow-500 border border-yellow-500/30 hover:bg-yellow-500/20";
+                  }
+
+                  return (
+                    <div key={tierKey} className={`${cardBase} ${cardClasses} ${tier.featured ? 'scale-[1.01]' : ''}`}>
+                      {tier.featured && (
+                        <>
+                          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-pink-500 to-purple-600" />
+                          <div className="absolute top-4 right-4 bg-gradient-to-r from-pink-500 to-purple-600 text-[10px] font-bold text-white px-2.5 py-1 rounded-full uppercase tracking-wider">
+                            Most Popular
+                          </div>
+                        </>
                       )}
-                      
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none" />
 
-                      <div className="absolute right-4 bottom-20 flex flex-col items-center gap-6 z-20">
-                        <div className="relative group cursor-pointer">
-                          <div className="w-12 h-12 rounded-full border-2 border-white overflow-hidden">
-                            <img src={currentProfile.image} alt="thumb" className="w-full h-full object-cover" />
-                          </div>
-                          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-pink-500 rounded-full p-0.5">
-                            <PlusSquare size={14} className="text-white" />
-                          </div>
-                        </div>
-
-                        <button onClick={(e) => { e.stopPropagation(); setLiked(!liked); }} className="flex flex-col items-center gap-1 hover:scale-110 transition-transform">
-                          <div className={`p-3 rounded-full bg-black/40 backdrop-blur-sm ${liked ? 'text-red-500' : 'text-white'}`}>
-                            <Heart size={28} fill={liked ? "currentColor" : "none"} />
-                          </div>
-                          <span className="text-white text-xs font-semibold">{currentProfile.likes}</span>
-                        </button>
-
-                        <button onClick={(e) => { e.stopPropagation(); setView('chat'); }} className="flex flex-col items-center gap-1 hover:scale-110 transition-transform">
-                          <div className="p-3 rounded-full bg-black/40 backdrop-blur-sm text-white">
-                            <MessageCircle size={28} />
-                          </div>
-                          <span className="text-white text-xs font-semibold">Chat</span>
-                        </button>
-
-                        <button onClick={(e) => { e.stopPropagation(); setView('voiceCall'); }} className="flex flex-col items-center gap-1 hover:scale-110 transition-transform">
-                          <div className="p-3 rounded-full bg-black/40 backdrop-blur-sm text-green-400">
-                            <Phone size={28} />
-                          </div>
-                          <span className="text-white text-xs font-semibold">Voice</span>
-                        </button>
-                        
-                        <button onClick={(e) => e.stopPropagation()} className="flex flex-col items-center gap-1 hover:scale-110 transition-transform">
-                          <div className="p-3 rounded-full bg-black/40 backdrop-blur-sm text-white">
-                            <Share2 size={28} />
-                          </div>
-                          <span className="text-white text-xs font-semibold">Share</span>
-                        </button>
+                      <div className={`flex justify-between items-center ${tier.featured ? 'mt-2' : ''} mb-4`}>
+                        <h3 className={`text-xl font-bold ${titleClass}`}>{tier.name}</h3>
+                        <span className="text-lg font-black text-white">
+                          ${tier.price}
+                          <span className="text-sm font-medium text-neutral-500">/mo</span>
+                        </span>
                       </div>
 
-                      <div className="absolute left-4 bottom-16 right-20 z-20 flex flex-col gap-2 pointer-events-none">
-                        <div className="flex items-center gap-3">
-                          <h2 className="text-3xl font-bold text-white tracking-wide shadow-black drop-shadow-lg">{currentProfile.name}</h2>
-                          {currentProfile.status === 'online' && (
-                            <div className="flex items-center gap-1 bg-black/50 backdrop-blur-sm px-2 py-1 rounded-full border border-green-500/30">
-                              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                              <span className="text-xs text-green-400 font-medium">Online</span>
+                      <ul className="flex flex-col gap-3 mb-5 text-sm">
+                        <li className="flex items-center gap-3 text-white"><CheckCircle2 size={16} className="text-pink-500" /> {formatNumber(tier.allowances.messages)} Messages</li>
+                        <li className="flex items-center gap-3 text-white"><CheckCircle2 size={16} className="text-pink-500" /> {formatNumber(tier.allowances.images)} Images</li>
+                        <li className="flex items-center gap-3 text-white"><CheckCircle2 size={16} className="text-pink-500" /> {formatNumber(tier.allowances.videos)} Video Moments</li>
+                        <li className="flex items-center gap-3 text-white"><CheckCircle2 size={16} className="text-pink-500" /> {formatNumber(tier.allowances.voiceMins)} Voice Mins</li>
+                        <li className="flex items-center gap-3 text-white"><CheckCircle2 size={16} className="text-pink-500" /> {formatNumber(tier.allowances.ttsChars)} TTS Chars</li>
+                      </ul>
+
+                      <button
+                        onClick={() => setCurrentPlan(tierKey)}
+                        className={`w-full py-3 rounded-xl font-bold transition-colors ${btnClass} ${tier.featured ? 'transition-transform' : ''}`}
+                      >
+                        {isCurrent ? "Current Plan" : tier.cta}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <BottomNav />
+        </div>
+      );
+
+      return (
+        <div className="flex justify-center items-center h-screen bg-neutral-900 w-full font-sans overflow-hidden">
+          <div className="w-full h-full max-w-md bg-black relative shadow-2xl overflow-hidden flex flex-col">
+
+            {view === 'feed' && (
+              <>
+                <div className="absolute top-0 left-0 w-full z-20 flex justify-between items-center p-4 bg-gradient-to-b from-black/80 to-transparent">
+                  <div className="flex flex-col">
+                    <h1 className="text-2xl font-black italic tracking-tighter">
+                      <span className="text-pink-500">PIXEL</span>
+                      <span className="text-cyan-400">CRUSH</span>
+                      <span className="text-white text-[19px]">.ai</span>
+                    </h1>
+                    <span className="text-[10px] text-emerald-300/90 font-semibold tracking-wide mt-1">STRICTLY SFW AI COMPANION</span>
+                  </div>
+                  <UsagePill />
+                </div>
+
+                <div className="absolute top-24 left-4 right-4 z-30 pointer-events-none px-2">
+                  <p className="text-white font-bold text-xl text-center leading-snug drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]">
+                    Meet your new AI friend, always there to share experiences
+                  </p>
+                </div>
+
+                <div className="relative flex-1 bg-neutral-800 cursor-pointer" onClick={handleNext}>
+                  {currentProfile.video ? (
+                    <video src={currentProfile.video} className="w-full h-full object-cover" autoPlay loop muted playsInline />
+                  ) : (
+                    <img src={currentProfile.image} alt={currentProfile.name} className="w-full h-full object-cover" />
+                  )}
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none" />
+
+                  <div className="absolute right-4 bottom-20 flex flex-col items-center gap-6 z-20">
+                    <div className="relative group cursor-pointer">
+                      <div className="w-12 h-12 rounded-full border-2 border-white overflow-hidden">
+                        <img src={currentProfile.image} alt="thumb" className="w-full h-full object-cover" />
+                      </div>
+                      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-pink-500 rounded-full p-0.5">
+                        <PlusSquare size={14} className="text-white" />
+                      </div>
+                    </div>
+
+                    <button onClick={(e) => { e.stopPropagation(); setLiked(!liked); }} className="flex flex-col items-center gap-1 hover:scale-110 transition-transform">
+                      <div className={`p-3 rounded-full bg-black/40 backdrop-blur-sm ${liked ? 'text-red-500' : 'text-white'}`}>
+                        <Heart size={28} fill={liked ? "currentColor" : "none"} />
+                      </div>
+                      <span className="text-white text-xs font-semibold">{currentProfile.likes}</span>
+                    </button>
+
+                    <button onClick={(e) => { e.stopPropagation(); setView('chat'); }} className="flex flex-col items-center gap-1 hover:scale-110 transition-transform">
+                      <div className="p-3 rounded-full bg-black/40 backdrop-blur-sm text-white">
+                        <MessageCircle size={28} />
+                      </div>
+                      <span className="text-white text-xs font-semibold">Chat</span>
+                    </button>
+
+                    <button onClick={(e) => { e.stopPropagation(); setView('voiceCall'); }} className="flex flex-col items-center gap-1 hover:scale-110 transition-transform">
+                      <div className="p-3 rounded-full bg-black/40 backdrop-blur-sm text-green-400">
+                        <Phone size={28} />
+                      </div>
+                      <span className="text-white text-xs font-semibold">Voice</span>
+                    </button>
+
+                    <button onClick={(e) => e.stopPropagation()} className="flex flex-col items-center gap-1 hover:scale-110 transition-transform">
+                      <div className="p-3 rounded-full bg-black/40 backdrop-blur-sm text-white">
+                        <Share2 size={28} />
+                      </div>
+                      <span className="text-white text-xs font-semibold">Share</span>
+                    </button>
+                  </div>
+
+                  <div className="absolute left-4 bottom-16 right-20 z-20 flex flex-col gap-2 pointer-events-none">
+                    <div className="flex items-center gap-3">
+                      <h2 className="text-3xl font-bold text-white tracking-wide shadow-black drop-shadow-lg">{currentProfile.name}</h2>
+                      {currentProfile.status === 'online' && (
+                        <div className="flex items-center gap-1 bg-black/50 backdrop-blur-sm px-2 py-1 rounded-full border border-green-500/30">
+                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                          <span className="text-xs text-green-400 font-medium">Online</span>
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-white/90 text-sm leading-snug drop-shadow-md">{currentProfile.bio}</p>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {currentProfile.tags.map(tag => (
+                        <span key={tag} className="text-xs font-semibold bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-md text-white border border-white/10">{tag}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <BottomNav />
+              </>
+            )}
+
+            {view === 'stories' && (
+              <div className="flex flex-col h-full w-full bg-[#0a0a0a]">
+                <div className="px-4 py-4 flex justify-between items-center border-b border-white/5 bg-neutral-900/40 backdrop-blur-md">
+                  <h1 className="text-xl font-black italic tracking-tighter">
+                    <span className="text-pink-500">PIXEL</span>
+                    <span className="text-cyan-400">CRUSH</span>
+                    <span className="text-white text-[13px]">.ai</span>
+                  </h1>
+                  <UsagePill />
+                </div>
+
+                <div className="flex-1 overflow-y-auto pb-4 scrollbar-hide">
+                  <h2 className="text-3xl font-bold text-white px-4 pt-6 pb-4">Your Stories</h2>
+
+                  <div className="px-4 pb-4">
+                    <div className="bg-[#1a1a1a] rounded-xl flex items-center p-3.5 border border-white/5">
+                      <Search className="text-neutral-500 mr-2" size={18} />
+                      <input type="text" placeholder="search stories" className="bg-transparent text-white outline-none w-full text-[15px] placeholder:text-neutral-600" />
+                    </div>
+                  </div>
+
+                  <div className="px-4 pb-5">
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-3 flex items-center justify-between">
+                      <span className="text-xs text-neutral-300">Monthly messages</span>
+                      <span className="text-xs text-white font-semibold">{usage.messages}/{planMeta.allowances.messages}</span>
+                    </div>
+                  </div>
+
+                  <div className="px-4 flex flex-col gap-3">
+                    {storiesList.map((story) => (
+                      <div
+                        key={story.id}
+                        onClick={() => setView('chapters')}
+                        className="flex items-center p-3.5 rounded-2xl bg-neutral-900/40 backdrop-blur-sm border border-white/5 hover:border-pink-500/30 hover:bg-neutral-800/60 transition-all cursor-pointer group"
+                      >
+                        <img src={story.image} alt={story.name} className="w-14 h-14 rounded-full object-cover group-hover:ring-2 ring-pink-500/50 transition-all duration-300" />
+                        <div className="flex-1 ml-4">
+                          <h3 className="text-white font-bold text-lg leading-tight">{story.name}</h3>
+                          <p className="text-neutral-400 text-[13px] mt-0.5">{story.chapters}</p>
+                        </div>
+                        <div className="flex flex-col items-end justify-center">
+                          <span className="text-neutral-500 text-[11px] font-medium mb-1.5">{story.time}</span>
+                          <ChevronRight className="text-neutral-600 group-hover:text-pink-400 transition-colors" size={18} />
+                        </div>
+                      </div>
+                    ))}
+
+                    <div
+                      onClick={() => setView('feed')}
+                      className="mt-2 flex flex-col items-center justify-center p-5 rounded-2xl bg-neutral-900/20 border-2 border-dashed border-white/10 hover:border-pink-500/40 hover:bg-neutral-900/60 transition-all cursor-pointer group"
+                    >
+                      <div className="bg-white/5 group-hover:bg-pink-500/20 p-2.5 rounded-full mb-3 transition-colors">
+                        <PlusSquare size={22} className="text-neutral-400 group-hover:text-pink-400 transition-colors" />
+                      </div>
+                      <h3 className="text-white font-bold text-center text-[15px] mb-1">Start New Chat with a Different Character</h3>
+                      <p className="text-neutral-500 text-center text-xs">Browse characters and begin a story</p>
+                    </div>
+                  </div>
+                </div>
+                <BottomNav />
+              </div>
+            )}
+
+            {view === 'chapters' && (
+              <div className="flex flex-col h-full w-full bg-[#0a0a0a]">
+                <div className="px-4 py-4 flex justify-between items-center bg-neutral-900/80 backdrop-blur-md shrink-0">
+                  <h1 className="text-xl font-black italic tracking-tighter">
+                    <span className="text-pink-500">PIXEL</span>
+                    <span className="text-cyan-400">CRUSH</span>
+                    <span className="text-white text-[13px]">.ai</span>
+                  </h1>
+                  <UsagePill />
+                </div>
+
+                <div className="flex items-center justify-between px-4 py-3 bg-neutral-900/40 border-b border-white/5 backdrop-blur-md shrink-0">
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => setView('stories')} className="text-white p-1 -ml-2 hover:bg-white/10 rounded-full transition">
+                      <ChevronLeft size={28} />
+                    </button>
+                    <img src={currentProfile.image} alt={currentProfile.name} className="w-10 h-10 rounded-full object-cover border-2 border-pink-500/50" />
+                    <div className="flex flex-col">
+                      <span className="text-white font-bold text-lg leading-tight">{currentProfile.name}</span>
+                      <span className="text-neutral-400 text-xs">Online</span>
+                    </div>
+                  </div>
+                  <button onClick={() => setView('voiceCall')} className="p-2.5 rounded-full bg-black/40 backdrop-blur-sm text-green-400 hover:scale-110 transition-transform border border-white/5">
+                    <Phone size={22} />
+                  </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto px-4 pt-5 pb-6 scrollbar-hide flex flex-col gap-5">
+                  <div className="flex gap-3">
+                    <button onClick={() => setView('chat')} className="flex-1 py-3.5 bg-gradient-to-r from-pink-500 to-purple-600 rounded-2xl text-white font-bold text-[15px] shadow-[0_4px_15px_rgba(236,72,153,0.3)] hover:scale-[1.02] transition-transform">
+                      Continue Story
+                    </button>
+                    <button className="flex-1 py-3.5 bg-neutral-900/60 border border-white/10 rounded-2xl text-white font-bold text-[15px] hover:bg-neutral-800 transition-colors backdrop-blur-sm">
+                      Start New Chapter
+                    </button>
+                  </div>
+
+                  <div className="bg-[#1a1a1a] rounded-xl flex items-center p-3.5 border border-white/5 shadow-inner">
+                    <Search className="text-neutral-500 mr-2" size={18} />
+                    <input type="text" placeholder="search chapters" className="bg-transparent text-white outline-none w-full text-[15px] placeholder:text-neutral-600" />
+                  </div>
+
+                  <div className="flex flex-col gap-3">
+                    {chaptersList.map((chapter) => (
+                      <div
+                        key={chapter.id}
+                        onClick={() => setView('chat')}
+                        className={`flex flex-col p-4 rounded-2xl backdrop-blur-sm cursor-pointer transition-all group
+                          ${chapter.isCurrent
+                            ? 'bg-neutral-900/60 border border-pink-500/50 hover:bg-neutral-800/80'
+                            : 'bg-neutral-900/40 border border-white/5 hover:border-white/20 hover:bg-neutral-800/60'
+                          }`}
+                      >
+                        <h3 className={`font-medium text-[15px] leading-snug mb-3 ${chapter.isCurrent ? 'text-white font-semibold' : 'text-neutral-200'}`}>
+                          {chapter.title}
+                        </h3>
+                        <div className="flex justify-between items-end mt-auto">
+                          <div className="flex items-center gap-3">
+                            <span className="text-neutral-500 text-[13px]">{chapter.messages} {chapter.messages === 1 ? 'message' : 'messages'}</span>
+                            {chapter.isCurrent && (
+                              <span className="bg-pink-500/20 text-pink-400 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
+                                Current
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-neutral-500 text-[12px] font-medium">{chapter.date}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <BottomNav />
+              </div>
+            )}
+
+            {view === 'chat' && (
+              <div className="flex flex-col h-full w-full bg-[#111]">
+                <div className="flex items-center justify-between px-4 py-3 bg-neutral-900/90 backdrop-blur-md border-b border-white/5 z-20">
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => setView('chapters')} className="text-white p-1 -ml-2 hover:bg-white/10 rounded-full transition">
+                      <ChevronLeft size={28} />
+                    </button>
+                    <img src={currentProfile.image} alt={currentProfile.name} className="w-10 h-10 rounded-full object-cover border-2 border-pink-500/50" />
+                    <div className="flex flex-col">
+                      <span className="text-white font-bold text-lg leading-tight">{currentProfile.name}</span>
+                      <span className="text-neutral-400 text-xs">Online</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-full bg-white/5 border border-white/10">
+                      <span className="text-[10px] text-neutral-300">{usage.messages}/{planMeta.allowances.messages}</span>
+                    </div>
+                    <button onClick={() => setView('voiceCall')} className="p-2.5 rounded-full bg-black/40 backdrop-blur-sm text-green-400 hover:scale-110 transition-transform border border-white/5">
+                      <Phone size={22} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex-1 overflow-y-auto px-4 py-6 flex flex-col gap-6 scrollbar-hide">
+                  <div className="flex flex-col gap-2 max-w-[90%]">
+                    <div className="bg-black/60 border border-pink-500/30 backdrop-blur-md text-white p-4 rounded-3xl rounded-tl-sm text-sm leading-relaxed">
+                      <span className="text-pink-400 font-medium italic">*laughs playfully*</span> I can't believe we actually managed to win that last round! You totally saved me at the end there.
+                      <span className="text-pink-400 font-medium italic"> *takes a sip of coffee, smiling brightly*</span> We should definitely queue up again tomorrow. I’ll even buy the coffee next time!
+                      <img src={currentProfile.image} alt="Selfie" className="w-full h-64 object-cover rounded-xl mt-3 border border-white/5" />
+                    </div>
+
+                    <div className="flex items-center gap-2 mt-2 flex-wrap">
+                      <button className="flex items-center gap-1.5 bg-neutral-900/80 border border-pink-500/40 text-pink-400 px-3 py-1.5 rounded-full text-[11px] font-bold backdrop-blur-md">
+                        <Mic size={12} /> Listen
+                      </button>
+                      <button className="flex items-center gap-1.5 bg-neutral-900/80 border border-pink-500/40 text-pink-400 px-3 py-1.5 rounded-full text-[11px] font-bold backdrop-blur-md">
+                        <ImageIcon size={12} /> Photo
+                      </button>
+                      <button className="flex items-center gap-1.5 bg-neutral-900/80 border border-pink-500/40 text-pink-400 px-3 py-1.5 rounded-full text-[11px] font-bold backdrop-blur-md">
+                        <Video size={12} /> Video Moment
+                      </button>
+                      <span className="text-neutral-500 text-[10px] ml-1 font-medium mt-0.5">10:50 pm</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-1 self-end max-w-[80%] mt-2">
+                    <div className="bg-gradient-to-br from-purple-900/50 to-pink-900/50 border border-purple-500/30 backdrop-blur-md text-white p-4 rounded-3xl rounded-tr-sm text-[15px]">
+                      Deal! But I'm holding you to that coffee promise. ☕️ You played great though!
+                    </div>
+                    <span className="text-neutral-500 text-xs self-end font-medium">10:51 pm</span>
+                  </div>
+
+                  <div className="flex flex-col gap-2 max-w-[90%] mt-2">
+                    <div className="bg-black/60 border border-pink-500/30 backdrop-blur-md text-white p-4 rounded-3xl rounded-tl-sm text-sm leading-relaxed relative overflow-hidden">
+                      <span className="text-pink-400 font-medium italic">*grins, adjusting my headset*</span> Oh, you know I always keep my promises. Prepare to be fully caffeinated!
+                      <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-pink-500 to-purple-500 animate-pulse" />
+                    </div>
+                  </div>
+                  <div className="h-4" />
+                </div>
+
+                <div className="py-2 px-4 bg-neutral-950 border-t border-white/5 z-30 flex justify-center shrink-0">
+                  <div className="flex items-center bg-[#1a1a1a] border border-white/10 rounded-full pl-4 pr-1.5 py-1.5 w-full">
+                    <input type="text" placeholder="Type a message..." className="bg-transparent flex-1 text-white text-[15px] outline-none h-8" />
+                    <button className="bg-gradient-to-r from-pink-500 to-purple-600 w-8 h-8 flex items-center justify-center rounded-full hover:scale-105 transition ml-2">
+                      <Send size={15} className="text-white fill-white -ml-0.5" />
+                    </button>
+                  </div>
+                </div>
+                <BottomNav />
+              </div>
+            )}
+
+            {view === 'plans' && <PlansPage />}
+
+            {view === 'gallery' && (
+              <div className="flex flex-col h-full w-full bg-[#0a0a0a]">
+                <div className="px-4 py-4 flex justify-between items-center border-b border-white/5 bg-neutral-900/40 backdrop-blur-md shrink-0">
+                  <h1 className="text-xl font-black italic tracking-tighter">
+                    <span className="text-pink-500">PIXEL</span>
+                    <span className="text-cyan-400">CRUSH</span>
+                    <span className="text-white text-[13px]">.ai</span>
+                  </h1>
+                  <UsagePill />
+                </div>
+
+                <div className="flex-1 overflow-y-auto pb-4 scrollbar-hide">
+                  <div className="flex justify-between items-center px-4 pt-6 pb-4">
+                    <h2 className="text-3xl font-bold text-white">Your Gallery</h2>
+                    <button className="px-4 py-1.5 rounded-full bg-neutral-900/80 border border-white/10 text-neutral-300 text-sm font-bold">
+                      Select
+                    </button>
+                  </div>
+
+                  {/* Gallery usage strip */}
+                  <div className="px-4 pb-4">
+                    <div className="bg-neutral-900/50 border border-white/10 rounded-xl p-3 grid grid-cols-2 gap-2">
+                      <div className="text-xs">
+                        <span className="text-neutral-400">Images</span>
+                        <p className="text-white font-semibold">{usage.images}/{planMeta.allowances.images}</p>
+                      </div>
+                      <div className="text-xs">
+                        <span className="text-neutral-400">Video Moments</span>
+                        <p className="text-white font-semibold">{usage.videos}/{planMeta.allowances.videos}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 px-4 pb-6 overflow-x-auto scrollbar-hide">
+                    <button className="px-5 py-2 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white text-sm font-bold shrink-0">All Media</button>
+                    <button className="px-5 py-2 rounded-full bg-neutral-900/80 border border-white/10 text-neutral-300 text-sm font-bold shrink-0">Photos</button>
+                    <button className="px-5 py-2 rounded-full bg-neutral-900/80 border border-white/10 text-neutral-300 text-sm font-bold shrink-0">Favourites</button>
+                    <button className="px-5 py-2 rounded-full bg-neutral-900/80 border border-white/10 text-neutral-300 text-sm font-bold shrink-0">Videos</button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 px-4 pb-6">
+                    {galleryList.map((item) => {
+                      const tierAllowed = canAccessTier(item.requiredTier);
+                      const isLocked = item.type === 'locked';
+                      const showLocked = isLocked;
+
+                      let lockTitle = "Locked";
+                      let lockCta = "Upgrade";
+                      if (item.lockReason === "Monthly video limit reached") {
+                        lockTitle = "Video limit reached";
+                        lockCta = "View Plans";
+                      } else if (item.requiredTier && !tierAllowed) {
+                        lockTitle = `${item.requiredTier} Plan`;
+                        lockCta = `Upgrade`;
+                      } else if (item.requiredTier && tierAllowed) {
+                        lockTitle = "Unavailable";
+                        lockCta = "View Plans";
+                      }
+
+                      return (
+                        <div
+                          key={item.id}
+                          className="relative aspect-[3/4] rounded-2xl overflow-hidden group border border-white/10 bg-neutral-900"
+                        >
+                          <img
+                            src={item.img}
+                            alt={item.persona}
+                            className={`w-full h-full object-cover transition-all duration-500 ${showLocked ? 'blur-lg scale-105 brightness-50' : 'group-hover:scale-105'}`}
+                            onError={(e) => { e.currentTarget.src = "https://via.placeholder.com/400x533/111111/666666?text=Media+Unavailable"; }}
+                          />
+
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+
+                          <div className="absolute bottom-3 left-3 flex items-center gap-2">
+                            <img
+                              src={profiles.find(p => p.name === item.persona)?.image || item.img}
+                              alt="thumbnail"
+                              className="w-6 h-6 rounded-full object-cover border border-white/40"
+                            />
+                            <span className="text-white font-bold text-sm">{item.persona}</span>
+                          </div>
+
+                          {item.isVideo && (
+                            <div className="absolute bottom-3 right-3 flex items-center justify-center bg-black/40 backdrop-blur-md p-1.5 rounded-md border border-white/10">
+                              <Video size={14} className="text-white/90" />
+                            </div>
+                          )}
+
+                          {!showLocked && (
+                            <button className="absolute top-3 right-3 p-2 bg-black/40 backdrop-blur-md rounded-full text-white/70 hover:text-pink-500 transition-colors z-10">
+                              <Heart size={16} />
+                            </button>
+                          )}
+
+                          {showLocked && (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/25 px-3">
+                              <div className="bg-black/60 p-3 rounded-full backdrop-blur-md mb-3 border border-white/10">
+                                <Lock size={20} className="text-white/90" />
+                              </div>
+                              <p className="text-white text-xs font-bold text-center mb-1">{lockTitle}</p>
+                              <p className="text-neutral-300 text-[10px] text-center mb-3">
+                                {item.lockReason === "Monthly video limit reached"
+                                  ? "Your monthly Video Moments allowance is used."
+                                  : "This item is included in a higher plan."}
+                              </p>
+                              <button
+                                onClick={() => setView('plans')}
+                                className="flex items-center gap-1.5 bg-gradient-to-r from-pink-500 to-purple-600 px-4 py-1.5 rounded-full text-xs font-bold text-white"
+                              >
+                                <Crown size={12} /> {lockCta}
+                              </button>
                             </div>
                           )}
                         </div>
-                        <p className="text-white/90 text-sm leading-snug drop-shadow-md">{currentProfile.bio}</p>
-                        <div className="flex flex-wrap gap-2 mt-1">
-                          {currentProfile.tags.map(tag => (
-                            <span key={tag} className="text-xs font-semibold bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-md text-white border border-white/10">{tag}</span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    <BottomNav />
-                  </>
-                )}
-
-                {view === 'stories' && (
-                  <div className="flex flex-col h-full w-full bg-[#0a0a0a]">
-                    <div className="px-4 py-4 flex justify-between items-center border-b border-white/5 bg-neutral-900/40 backdrop-blur-md">
-                      <h1 className="text-xl font-black italic tracking-tighter">
-                        <span className="text-pink-500">PIXEL</span>
-                        <span className="text-cyan-400">CRUSH</span>
-                        <span className="text-white text-[13px]">.ai</span>
-                      </h1>
-                      <div onClick={() => setView('subscriptions')} className="flex items-center justify-center bg-neutral-900/80 backdrop-blur-md border border-neutral-700 px-4 py-1.5 rounded-full cursor-pointer hover:bg-neutral-800 transition">
-                        <span className="text-white font-bold text-xs tracking-wide">LOGIN / SIGN-UP</span>
-                      </div>
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto pb-4 scrollbar-hide">
-                      <h2 className="text-3xl font-bold text-white px-4 pt-6 pb-4">Your Stories</h2>
-
-                      <div className="px-4 pb-6">
-                        <div className="bg-[#1a1a1a] rounded-xl flex items-center p-3.5 border border-white/5 focus-within:border-pink-500/50 transition duration-300 shadow-inner">
-                          <Search className="text-neutral-500 mr-2" size={18} />
-                          <input type="text" placeholder="search stories" className="bg-transparent text-white outline-none w-full text-[15px] placeholder:text-neutral-600" />
-                        </div>
-                      </div>
-
-                      <div className="px-4 flex flex-col gap-3">
-                        {storiesList.map((story) => (
-                          <div 
-                            key={story.id}
-                            onClick={() => setView('chapters')}
-                            className="flex items-center p-3.5 rounded-2xl bg-neutral-900/40 backdrop-blur-sm border border-white/5 hover:border-pink-500/30 hover:bg-neutral-800/60 transition-all cursor-pointer group shadow-[0_4px_15px_rgba(0,0,0,0.2)]"
-                          >
-                            <div className="relative">
-                              <img src={story.image} alt={story.name} className="w-14 h-14 rounded-full object-cover group-hover:ring-2 ring-pink-500/50 transition-all duration-300" />
-                            </div>
-                            <div className="flex-1 ml-4">
-                              <h3 className="text-white font-bold text-lg leading-tight">{story.name}</h3>
-                              <p className="text-neutral-400 text-[13px] mt-0.5">{story.chapters}</p>
-                            </div>
-                            <div className="flex flex-col items-end justify-center">
-                              <span className="text-neutral-500 text-[11px] font-medium mb-1.5">{story.time}</span>
-                              <ChevronRight className="text-neutral-600 group-hover:text-pink-400 transition-colors" size={18} />
-                            </div>
-                          </div>
-                        ))}
-                        
-                        <div 
-                          onClick={() => setView('feed')}
-                          className="mt-2 flex flex-col items-center justify-center p-5 rounded-2xl bg-neutral-900/20 border-2 border-dashed border-white/10 hover:border-pink-500/40 hover:bg-neutral-900/60 transition-all cursor-pointer group"
-                        >
-                          <div className="bg-white/5 group-hover:bg-pink-500/20 p-2.5 rounded-full mb-3 transition-colors">
-                            <PlusSquare size={22} className="text-neutral-400 group-hover:text-pink-400 transition-colors" />
-                          </div>
-                          <h3 className="text-white font-bold text-center text-[15px] mb-1">Start New Chat with a Different Character</h3>
-                          <p className="text-neutral-500 text-center text-xs">Browse characters and begin a story</p>
-                        </div>
-
-                      </div>
-                    </div>
-                    <BottomNav />
+                      );
+                    })}
                   </div>
-                )}
-
-                {view === 'chapters' && (
-                  <div className="flex flex-col h-full w-full bg-[#0a0a0a]">
-                    <div className="px-4 py-4 flex justify-between items-center bg-neutral-900/80 backdrop-blur-md shrink-0">
-                      <h1 className="text-xl font-black italic tracking-tighter">
-                        <span className="text-pink-500">PIXEL</span>
-                        <span className="text-cyan-400">CRUSH</span>
-                        <span className="text-white text-[13px]">.ai</span>
-                      </h1>
-                      <div onClick={() => setView('subscriptions')} className="flex items-center justify-center bg-neutral-900/80 backdrop-blur-md border border-neutral-700 px-4 py-1.5 rounded-full cursor-pointer hover:bg-neutral-800 transition">
-                        <span className="text-white font-bold text-xs tracking-wide">LOGIN / SIGN-UP</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between px-4 py-3 bg-neutral-900/40 border-b border-white/5 backdrop-blur-md shrink-0">
-                      <div className="flex items-center gap-3">
-                        <button onClick={() => setView('stories')} className="text-white p-1 -ml-2 hover:bg-white/10 rounded-full transition">
-                          <ChevronLeft size={28} />
-                        </button>
-                        <img src={currentProfile.image} alt={currentProfile.name} className="w-10 h-10 rounded-full object-cover border-2 border-pink-500/50" />
-                        <div className="flex flex-col">
-                          <span className="text-white font-bold text-lg leading-tight">{currentProfile.name}</span>
-                          <span className="text-neutral-400 text-xs">Online</span>
-                        </div>
-                      </div>
-                      <button onClick={() => setView('voiceCall')} className="p-2.5 rounded-full bg-black/40 backdrop-blur-sm text-green-400 hover:scale-110 transition-transform border border-white/5">
-                        <Phone size={22} />
-                      </button>
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto px-4 pt-5 pb-6 scrollbar-hide flex flex-col gap-5">
-                      <div className="flex gap-3">
-                        <button onClick={() => setView('chat')} className="flex-1 py-3.5 bg-gradient-to-r from-pink-500 to-purple-600 rounded-2xl text-white font-bold text-[15px] shadow-[0_4px_15px_rgba(236,72,153,0.3)] hover:scale-[1.02] transition-transform">
-                          Continue Story
-                        </button>
-                        <button className="flex-1 py-3.5 bg-neutral-900/60 border border-white/10 rounded-2xl text-white font-bold text-[15px] hover:bg-neutral-800 transition-colors backdrop-blur-sm">
-                          Start New Chapter
-                        </button>
-                      </div>
-
-                      <div className="bg-[#1a1a1a] rounded-xl flex items-center p-3.5 border border-white/5 focus-within:border-pink-500/50 transition duration-300 shadow-inner">
-                        <Search className="text-neutral-500 mr-2" size={18} />
-                        <input type="text" placeholder="search chapters" className="bg-transparent text-white outline-none w-full text-[15px] placeholder:text-neutral-600" />
-                      </div>
-
-                      <div className="flex flex-col gap-3">
-                        {chaptersList.map((chapter) => (
-                          <div 
-                            key={chapter.id}
-                            onClick={() => setView('chat')}
-                            className={`flex flex-col p-4 rounded-2xl backdrop-blur-sm cursor-pointer transition-all group shadow-[0_4px_15px_rgba(0,0,0,0.1)]
-                              ${chapter.isCurrent 
-                                ? 'bg-neutral-900/60 border border-pink-500/50 hover:bg-neutral-800/80' 
-                                : 'bg-neutral-900/40 border border-white/5 hover:border-white/20 hover:bg-neutral-800/60'
-                              }`}
-                          >
-                            <h3 className={`font-medium text-[15px] leading-snug mb-3 ${chapter.isCurrent ? 'text-white font-semibold' : 'text-neutral-200'}`}>
-                              {chapter.title}
-                            </h3>
-                            <div className="flex justify-between items-end mt-auto">
-                              <div className="flex items-center gap-3">
-                                <span className="text-neutral-500 text-[13px]">{chapter.messages} {chapter.messages === 1 ? 'message' : 'messages'}</span>
-                                {chapter.isCurrent && (
-                                  <span className="bg-pink-500/20 text-pink-400 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
-                                    Current
-                                  </span>
-                                )}
-                              </div>
-                              <span className="text-neutral-500 text-[12px] font-medium">{chapter.date}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <BottomNav />
-                  </div>
-                )}
-
-                {view === 'chat' && (
-                  <div className="flex flex-col h-full w-full bg-[#111]">
-                    <div className="flex items-center justify-between px-4 py-3 bg-neutral-900/90 backdrop-blur-md border-b border-white/5 z-20">
-                      <div className="flex items-center gap-3">
-                        <button onClick={() => setView('chapters')} className="text-white p-1 -ml-2 hover:bg-white/10 rounded-full transition">
-                          <ChevronLeft size={28} />
-                        </button>
-                        <div className="relative">
-                          <img src={currentProfile.image} alt={currentProfile.name} className="w-10 h-10 rounded-full object-cover border-2 border-pink-500/50" />
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-white font-bold text-lg leading-tight">{currentProfile.name}</span>
-                          <span className="text-neutral-400 text-xs">Online</span>
-                        </div>
-                      </div>
-                      <button onClick={() => setView('voiceCall')} className="p-2.5 rounded-full bg-black/40 backdrop-blur-sm text-green-400 hover:scale-110 transition-transform border border-white/5">
-                        <Phone size={22} />
-                      </button>
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto px-4 py-6 flex flex-col gap-6 scrollbar-hide">
-                      <div className="flex flex-col gap-2 max-w-[90%]">
-                        <div className="bg-black/60 border border-pink-500/30 backdrop-blur-md text-white p-4 rounded-3xl rounded-tl-sm text-sm leading-relaxed shadow-[0_4px_15px_rgba(236,72,153,0.1)]">
-                          <span className="text-pink-400 font-medium italic">*laughs playfully*</span> I can't believe we actually managed to win that last round! You totally saved me at the end there. <span className="text-pink-400 font-medium italic">*takes a sip of coffee, smiling brightly*</span> We should definitely queue up again tomorrow. I'll even buy the coffee next time!
-                          <img src={currentProfile.image} alt="Selfie" className="w-full h-64 object-cover rounded-xl mt-3 shadow-md border border-white/5" />
-                        </div>
-                        
-                        <div className="flex items-center gap-2 mt-2">
-                          <button className="flex items-center gap-1.5 bg-neutral-900/80 border border-pink-500/40 text-pink-400 px-3 py-1.5 rounded-full text-[11px] font-bold backdrop-blur-md hover:bg-pink-500/10 hover:border-pink-400 transition-all shadow-[0_0_8px_rgba(236,72,153,0.15)]">
-                            <Mic size={12} /> Listen
-                          </button>
-                          <button className="flex items-center gap-1.5 bg-neutral-900/80 border border-pink-500/40 text-pink-400 px-3 py-1.5 rounded-full text-[11px] font-bold backdrop-blur-md hover:bg-pink-500/10 hover:border-pink-400 transition-all shadow-[0_0_8px_rgba(236,72,153,0.15)]">
-                            <ImageIcon size={12} /> Photo
-                          </button>
-                          <button className="flex items-center gap-1.5 bg-neutral-900/80 border border-pink-500/40 text-pink-400 px-3 py-1.5 rounded-full text-[11px] font-bold backdrop-blur-md hover:bg-pink-500/10 hover:border-pink-400 transition-all shadow-[0_0_8px_rgba(236,72,153,0.15)]">
-                            <Video size={12} /> Video
-                          </button>
-                          <span className="text-neutral-500 text-[10px] ml-1 font-medium mt-0.5">10:50 pm</span>
-                        </div>
-                      </div>
-
-                       <div className="flex flex-col gap-1 self-end max-w-[80%] mt-2">
-                        <div className="bg-gradient-to-br from-purple-900/50 to-pink-900/50 border border-purple-500/30 backdrop-blur-md text-white p-4 rounded-3xl rounded-tr-sm text-[15px] shadow-[0_4px_15px_rgba(168,85,247,0.1)]">
-                          Deal! But I'm holding you to that coffee promise. ☕️ You played great though!
-                        </div>
-                        <span className="text-neutral-500 text-xs self-end font-medium">10:51 pm</span>
-                      </div>
-
-                       <div className="flex flex-col gap-2 max-w-[90%] mt-2">
-                        <div className="bg-black/60 border border-pink-500/30 backdrop-blur-md text-white p-4 rounded-3xl rounded-tl-sm text-sm leading-relaxed shadow-[0_4px_15px_rgba(236,72,153,0.1)] relative overflow-hidden">
-                          <span className="text-pink-400 font-medium italic">*grins, adjusting my headset*</span> Oh, you know I always keep my promises. Prepare to be fully caffeinated!
-                          <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-pink-500 to-purple-500 animate-pulse" />
-                        </div>
-                      </div>
-                      <div className="h-4" />
-                    </div>
-
-                    <div className="py-2 px-4 bg-neutral-950 border-t border-white/5 z-30 flex justify-center shrink-0">
-                      <div className="flex items-center bg-[#1a1a1a] border border-white/10 rounded-full pl-4 pr-1.5 py-1.5 w-full">
-                        <input type="text" placeholder="" className="bg-transparent flex-1 text-white text-[15px] outline-none h-8" />
-                        <button className="bg-gradient-to-r from-pink-500 to-purple-600 w-8 h-8 flex items-center justify-center rounded-full hover:scale-105 transition shadow-[0_0_10px_rgba(236,72,153,0.5)] ml-2">
-                          <Send size={15} className="text-white fill-white -ml-0.5" />
-                        </button>
-                      </div>
-                    </div>
-                    <BottomNav />
-                  </div>
-                )}
-
-                {view === 'subscriptions' && (
-                  <div className="flex flex-col h-full w-full bg-[#0a0a0a]">
-                    <div className="sticky top-0 z-40 px-4 py-4 flex justify-between items-center border-b border-white/5 bg-neutral-900/80 backdrop-blur-xl shrink-0">
-                      <button onClick={() => setView('feed')} className="text-neutral-400 hover:text-white transition bg-white/5 p-2 rounded-full">
-                        <X size={20} />
-                      </button>
-                      <h1 className="text-lg font-bold text-white tracking-wide">Get Closer</h1>
-                      <div className="w-9" />
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto px-4 pt-6 pb-8 scrollbar-hide flex flex-col gap-6">
-                      <div className="text-center mb-2">
-                        <h2 className="text-3xl font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-cyan-400 mb-2">
-                          UPGRADE YOUR VIBE
-                        </h2>
-                        <p className="text-neutral-400 text-sm">Choose a plan to unlock endless chats, photos, and voice calls.</p>
-                      </div>
-
-                      {/* TIER 1: LITE */}
-                      <div className="bg-neutral-900/40 border border-white/10 rounded-3xl p-5 backdrop-blur-sm relative overflow-hidden">
-                        <div className="flex justify-between items-center mb-4">
-                          <h3 className="text-xl font-bold text-white">Lite</h3>
-                          <span className="text-lg font-black text-white">$0<span className="text-sm font-medium text-neutral-500">/mo</span></span>
-                        </div>
-                        <ul className="flex flex-col gap-3 mb-6">
-                          <li className="flex items-center gap-3 text-neutral-300 text-sm"><MessageCircle size={16} className="text-neutral-500" /> 1,500 Messages</li>
-                          <li className="flex items-center gap-3 text-neutral-300 text-sm"><ImageIcon size={16} className="text-neutral-500" /> 25 Images</li>
-                          <li className="flex items-center gap-3 text-neutral-300 text-sm"><Mic size={16} className="text-neutral-500" /> 10 Voice Mins & 4k TTS</li>
-                        </ul>
-                        <button className="w-full py-3 rounded-xl font-bold text-white bg-white/10 hover:bg-white/20 transition-colors">Current Plan</button>
-                      </div>
-
-                      {/* TIER 2: CORE */}
-                      <div className="bg-neutral-900/40 border border-pink-500/30 rounded-3xl p-5 backdrop-blur-sm relative overflow-hidden hover:border-pink-500/60 transition-colors">
-                        <div className="absolute -right-6 -top-6 w-24 h-24 bg-pink-500/10 rounded-full blur-xl pointer-events-none" />
-                        <div className="flex justify-between items-center mb-4">
-                          <h3 className="text-xl font-bold text-pink-400">Core</h3>
-                          <span className="text-lg font-black text-white">$14.99<span className="text-sm font-medium text-neutral-500">/mo</span></span>
-                        </div>
-                        <ul className="flex flex-col gap-3 mb-6 relative z-10">
-                          <li className="flex items-center gap-3 text-white text-sm"><CheckCircle2 size={16} className="text-pink-500" /> 5,000 Messages</li>
-                          <li className="flex items-center gap-3 text-white text-sm"><CheckCircle2 size={16} className="text-pink-500" /> 200 Images</li>
-                          <li className="flex items-center gap-3 text-white text-sm"><CheckCircle2 size={16} className="text-pink-500" /> 30 Voice Mins & 20k TTS</li>
-                        </ul>
-                        <button className="w-full py-3 rounded-xl font-bold text-pink-400 bg-pink-500/10 hover:bg-pink-500/20 border border-pink-500/30 transition-colors relative z-10">Select Plan</button>
-                      </div>
-
-                      {/* TIER 3: PREMIUM */}
-                      <div className="bg-gradient-to-br from-neutral-900 to-neutral-900 border border-purple-500/60 rounded-3xl p-5 backdrop-blur-sm relative overflow-hidden shadow-[0_0_30px_rgba(168,85,247,0.15)] transform scale-[1.02]">
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-pink-500 to-purple-600" />
-                        <div className="absolute -right-10 -top-10 w-32 h-32 bg-purple-600/20 rounded-full blur-2xl pointer-events-none" />
-                        
-                        <div className="absolute top-4 right-4 bg-gradient-to-r from-pink-500 to-purple-600 text-[10px] font-bold text-white px-2.5 py-1 rounded-full uppercase tracking-wider shadow-lg">
-                          Most Popular
-                        </div>
-
-                        <div className="flex justify-between items-center mb-4 mt-2">
-                          <h3 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 flex items-center gap-2">
-                            <Zap size={20} className="text-pink-400" /> Premium
-                          </h3>
-                        </div>
-                        <div className="mb-4">
-                          <span className="text-2xl font-black text-white">$39.99<span className="text-sm font-medium text-neutral-500">/mo</span></span>
-                        </div>
-
-                        <ul className="flex flex-col gap-3 mb-6 relative z-10">
-                          <li className="flex items-center gap-3 text-white text-[15px] font-medium"><CheckCircle2 size={18} className="text-purple-400 fill-purple-900/40" /> 10,000 Messages</li>
-                          <li className="flex items-center gap-3 text-white text-[15px] font-medium"><CheckCircle2 size={18} className="text-purple-400 fill-purple-900/40" /> 500 Images</li>
-                          <li className="flex items-center gap-3 text-white text-[15px] font-medium"><CheckCircle2 size={18} className="text-purple-400 fill-purple-900/40" /> 5 Video Messages</li>
-                          <li className="flex items-center gap-3 text-white text-[15px] font-medium"><CheckCircle2 size={18} className="text-purple-400 fill-purple-900/40" /> 120 Voice Mins & 50k TTS</li>
-                        </ul>
-                        <button className="w-full py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-pink-600 to-purple-600 shadow-[0_4px_15px_rgba(236,72,153,0.3)] hover:scale-[1.02] transition-transform relative z-10">Upgrade Now</button>
-                      </div>
-
-                      {/* TIER 4: ULTRA */}
-                      <div className="bg-neutral-900/40 border border-yellow-500/30 rounded-3xl p-5 backdrop-blur-sm relative overflow-hidden hover:border-yellow-500/60 transition-colors">
-                        <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-yellow-500/10 rounded-full blur-xl pointer-events-none" />
-                        <div className="flex justify-between items-center mb-4">
-                          <h3 className="text-xl font-bold text-yellow-500">Ultra</h3>
-                          <span className="text-lg font-black text-white">$89.99<span className="text-sm font-medium text-neutral-500">/mo</span></span>
-                        </div>
-                        <ul className="flex flex-col gap-3 mb-6 relative z-10">
-                          <li className="flex items-center gap-3 text-white text-sm"><CheckCircle2 size={16} className="text-yellow-500" /> 20,000 Messages</li>
-                          <li className="flex items-center gap-3 text-white text-sm"><CheckCircle2 size={16} className="text-yellow-500" /> 1,000 Images</li>
-                          <li className="flex items-center gap-3 text-white text-sm"><CheckCircle2 size={16} className="text-yellow-500" /> 10 Video Messages</li>
-                          <li className="flex items-center gap-3 text-white text-sm"><CheckCircle2 size={16} className="text-yellow-500" /> 180 Voice Mins & 100k TTS</li>
-                        </ul>
-                        <button className="w-full py-3 rounded-xl font-bold text-yellow-500 bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/30 transition-colors relative z-10">Select Plan</button>
-                      </div>
-
-                    </div>
-                    <BottomNav />
-                  </div>
-                )}
-
-                {view === 'gallery' && (
-                  <div className="flex flex-col h-full w-full bg-[#0a0a0a]">
-                    <div className="px-4 py-4 flex justify-between items-center border-b border-white/5 bg-neutral-900/40 backdrop-blur-md shrink-0">
-                      <h1 className="text-xl font-black italic tracking-tighter">
-                        <span className="text-pink-500">PIXEL</span>
-                        <span className="text-cyan-400">CRUSH</span>
-                        <span className="text-white text-[13px]">.ai</span>
-                      </h1>
-                      <div onClick={() => setView('subscriptions')} className="flex items-center justify-center bg-neutral-900/80 backdrop-blur-md border border-neutral-700 px-4 py-1.5 rounded-full cursor-pointer hover:bg-neutral-800 transition">
-                        <span className="text-white font-bold text-xs tracking-wide">LOGIN / SIGN-UP</span>
-                      </div>
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto pb-4 scrollbar-hide">
-                      <div className="flex justify-between items-center px-4 pt-6 pb-4">
-                        <h2 className="text-3xl font-bold text-white">Your Gallery</h2>
-                        <button className="px-4 py-1.5 rounded-full bg-neutral-900/80 border border-white/10 text-neutral-300 text-sm font-bold hover:bg-white/10 transition-colors backdrop-blur-sm">
-                          Select
-                        </button>
-                      </div>
-
-                      {/* Filter Tabs */}
-                      <div className="flex gap-2 px-4 pb-6 overflow-x-auto scrollbar-hide">
-                        <button className="px-5 py-2 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white text-sm font-bold shadow-[0_0_10px_rgba(236,72,153,0.3)] shrink-0">All Media</button>
-                        <button className="px-5 py-2 rounded-full bg-neutral-900/80 border border-white/10 text-neutral-300 text-sm font-bold hover:bg-white/10 transition-colors backdrop-blur-sm shrink-0">Photos</button>
-                        <button className="px-5 py-2 rounded-full bg-neutral-900/80 border border-white/10 text-neutral-300 text-sm font-bold hover:bg-white/10 transition-colors backdrop-blur-sm shrink-0">Favourites</button>
-                        <button className="px-5 py-2 rounded-full bg-neutral-900/80 border border-white/10 text-neutral-300 text-sm font-bold hover:bg-white/10 transition-colors backdrop-blur-sm shrink-0">Videos</button>
-                      </div>
-
-                      {/* Image Grid */}
-                      <div className="grid grid-cols-2 gap-3 px-4 pb-6">
-                        {galleryList.map((item) => (
-                          <div 
-                            key={item.id} 
-                            className="relative aspect-[3/4] rounded-2xl overflow-hidden group border border-white/10 shadow-[0_4px_15px_rgba(0,0,0,0.3)] bg-neutral-900"
-                          >
-                            <img 
-                              src={item.img} 
-                              alt={item.persona} 
-                              className={`w-full h-full object-cover transition-all duration-500 ${item.type === 'locked' ? 'blur-xl scale-110 brightness-50' : 'group-hover:scale-105'}`} 
-                            />
-                            
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
-                            
-                            <div className="absolute bottom-3 left-3 flex items-center gap-2">
-                              <img 
-                                src={profiles.find(p => p.name === item.persona)?.image || item.img} 
-                                alt="thumbnail" 
-                                className="w-6 h-6 rounded-full object-cover border border-white/40 shadow-sm"
-                              />
-                              <span className="text-white font-bold text-sm drop-shadow-md">{item.persona}</span>
-                            </div>
-
-                            {item.isVideo && (
-                              <div className="absolute bottom-3 right-3 flex items-center justify-center drop-shadow-md bg-black/40 backdrop-blur-md p-1.5 rounded-md border border-white/10">
-                                <Video size={14} className="text-white/90" />
-                              </div>
-                            )}
-
-                            {item.type === 'unlocked' && (
-                              <button className="absolute top-3 right-3 p-2 bg-black/40 backdrop-blur-md rounded-full text-white/70 hover:text-pink-500 hover:bg-black/60 transition-colors z-10">
-                                <Heart size={16} />
-                              </button>
-                            )}
-                            
-                            {item.type === 'locked' && (
-                              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/20">
-                                <div className="bg-black/60 p-3 rounded-full backdrop-blur-md mb-3 border border-white/10">
-                                  <Lock size={20} className="text-white/90" />
-                                </div>
-                                <button className="flex items-center gap-1.5 bg-gradient-to-r from-pink-500 to-purple-600 px-4 py-1.5 rounded-full text-xs font-bold text-white shadow-[0_0_15px_rgba(236,72,153,0.5)] hover:scale-105 transition-transform">
-                                  <Sparkles size={12} /> {item.cost}
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <BottomNav />
-                  </div>
-                )}
-
-                {view === 'account' && (
-                  <div className="flex flex-col h-full w-full bg-[#0a0a0a]">
-                    <div className="px-4 py-4 flex justify-between items-center border-b border-white/5 bg-neutral-900/40 backdrop-blur-md shrink-0">
-                      <h1 className="text-xl font-black italic tracking-tighter">
-                        <span className="text-pink-500">PIXEL</span>
-                        <span className="text-cyan-400">CRUSH</span>
-                        <span className="text-white text-[13px]">.ai</span>
-                      </h1>
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto pb-8 scrollbar-hide">
-                      
-                      {/* Profile Header Block */}
-                      <div className="px-4 pt-10 pb-8 flex flex-col items-center border-b border-white/5">
-                        <div className="w-32 h-32 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 p-1 mb-5 shadow-[0_0_30px_rgba(236,72,153,0.4)]">
-                          <div className="w-full h-full rounded-full bg-neutral-900 border-4 border-black flex items-center justify-center overflow-hidden">
-                            <User size={56} className="text-neutral-500" />
-                          </div>
-                        </div>
-                        <h2 className="text-3xl font-black tracking-tight text-white mb-1">GuestUser_992</h2>
-                        <p className="text-neutral-400 text-[15px] mb-6">user992@pixelcrush.ai</p>
-                        <button className="px-10 py-3 rounded-full bg-neutral-800 text-white text-[15px] font-bold hover:bg-neutral-700 hover:scale-105 active:scale-95 transition-all shadow-lg border border-white/10">
-                          Edit Profile
-                        </button>
-                      </div>
-
-                      {/* Usage & Subscription Status */}
-                      <div className="px-4 py-6">
-                        <div className="flex justify-between items-center mb-4">
-                          <h3 className="text-lg font-bold text-white">Current Plan</h3>
-                          <button 
-                            onClick={() => setView('subscriptions')} 
-                            className="flex items-center gap-1.5 px-5 py-2 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white text-[15px] font-bold shadow-[0_4px_15px_rgba(236,72,153,0.4)] hover:scale-105 transition-transform"
-                          >
-                            <Crown size={16} className="text-white fill-white" />
-                            Upgrade
-                          </button>
-                        </div>
-                        
-                        <div className="bg-neutral-900/60 border border-purple-500/30 rounded-3xl p-5 backdrop-blur-sm relative overflow-hidden shadow-lg">
-                          <div className="absolute -right-10 -top-10 w-32 h-32 bg-purple-600/10 rounded-full blur-2xl pointer-events-none" />
-                          
-                          <div className="flex items-center gap-2 mb-6">
-                            <Crown size={20} className="text-purple-400" />
-                            <span className="text-white font-bold text-lg">Premium Plan</span>
-                          </div>
-
-                          {/* Usage Bars */}
-                          <div className="flex flex-col gap-4 relative z-10">
-                            <div>
-                              <div className="flex justify-between text-xs mb-1.5">
-                                <span className="text-neutral-400">Messages</span>
-                                <span className="text-white font-medium">8,240 / 10,000</span>
-                              </div>
-                              <div className="w-full bg-black/50 rounded-full h-2 overflow-hidden border border-white/5">
-                                <div className="bg-gradient-to-r from-pink-500 to-purple-500 h-2 rounded-full" style={{ width: '82%' }}></div>
-                              </div>
-                            </div>
-
-                            <div>
-                              <div className="flex justify-between text-xs mb-1.5">
-                                <span className="text-neutral-400">Image Generation</span>
-                                <span className="text-white font-medium">120 / 500</span>
-                              </div>
-                              <div className="w-full bg-black/50 rounded-full h-2 overflow-hidden border border-white/5">
-                                <div className="bg-gradient-to-r from-pink-500 to-purple-500 h-2 rounded-full" style={{ width: '24%' }}></div>
-                              </div>
-                            </div>
-
-                            <div>
-                              <div className="flex justify-between text-xs mb-1.5">
-                                <span className="text-neutral-400">Voice Mins</span>
-                                <span className="text-white font-medium">45 / 120</span>
-                              </div>
-                              <div className="w-full bg-black/50 rounded-full h-2 overflow-hidden border border-white/5">
-                                <div className="bg-gradient-to-r from-pink-500 to-purple-500 h-2 rounded-full" style={{ width: '37%' }}></div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Settings Menu List */}
-                      <div className="px-4 pb-6">
-                        <h3 className="text-sm font-bold text-neutral-500 uppercase tracking-wider mb-3 px-2">Settings</h3>
-                        <div className="bg-neutral-900/40 rounded-3xl border border-white/5 overflow-hidden backdrop-blur-sm">
-                          
-                          <div className="flex items-center justify-between p-4 border-b border-white/5 hover:bg-white/5 cursor-pointer transition-colors group">
-                            <div className="flex items-center gap-3">
-                              <div className="bg-blue-500/20 p-2 rounded-xl text-blue-400 group-hover:scale-110 transition-transform"><UserCircle size={20} /></div>
-                              <span className="text-white font-medium">Account Details</span>
-                            </div>
-                            <ChevronRight size={18} className="text-neutral-500 group-hover:text-white transition-colors" />
-                          </div>
-
-                          <div className="flex items-center justify-between p-4 border-b border-white/5 hover:bg-white/5 cursor-pointer transition-colors group">
-                            <div className="flex items-center gap-3">
-                              <div className="bg-pink-500/20 p-2 rounded-xl text-pink-400 group-hover:scale-110 transition-transform"><Bell size={20} /></div>
-                              <span className="text-white font-medium">Notifications</span>
-                            </div>
-                            <ChevronRight size={18} className="text-neutral-500 group-hover:text-white transition-colors" />
-                          </div>
-
-                          <div className="flex items-center justify-between p-4 border-b border-white/5 hover:bg-white/5 cursor-pointer transition-colors group">
-                            <div className="flex items-center gap-3">
-                              <div className="bg-green-500/20 p-2 rounded-xl text-green-400 group-hover:scale-110 transition-transform"><Shield size={20} /></div>
-                              <span className="text-white font-medium">Privacy & Safety</span>
-                            </div>
-                            <ChevronRight size={18} className="text-neutral-500 group-hover:text-white transition-colors" />
-                          </div>
-
-                          <div className="flex items-center justify-between p-4 hover:bg-white/5 cursor-pointer transition-colors group">
-                            <div className="flex items-center gap-3">
-                              <div className="bg-yellow-500/20 p-2 rounded-xl text-yellow-400 group-hover:scale-110 transition-transform"><CreditCard size={20} /></div>
-                              <span className="text-white font-medium">Payment Methods</span>
-                            </div>
-                            <ChevronRight size={18} className="text-neutral-500 group-hover:text-white transition-colors" />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Support Menu List */}
-                      <div className="px-4 pb-6">
-                        <h3 className="text-sm font-bold text-neutral-500 uppercase tracking-wider mb-3 px-2">Support</h3>
-                        <div className="bg-neutral-900/40 rounded-3xl border border-white/5 overflow-hidden backdrop-blur-sm">
-                          <div className="flex items-center justify-between p-4 border-b border-white/5 hover:bg-white/5 cursor-pointer transition-colors group">
-                            <div className="flex items-center gap-3">
-                              <div className="bg-purple-500/20 p-2 rounded-xl text-purple-400 group-hover:scale-110 transition-transform"><HelpCircle size={20} /></div>
-                              <span className="text-white font-medium">Help Center & FAQ</span>
-                            </div>
-                            <ChevronRight size={18} className="text-neutral-500 group-hover:text-white transition-colors" />
-                          </div>
-                          <div className="flex items-center justify-between p-4 hover:bg-white/5 cursor-pointer transition-colors group">
-                            <div className="flex items-center gap-3">
-                              <div className="bg-neutral-500/20 p-2 rounded-xl text-neutral-400 group-hover:scale-110 transition-transform"><Settings size={20} /></div>
-                              <span className="text-white font-medium">Terms of Service</span>
-                            </div>
-                            <ChevronRight size={18} className="text-neutral-500 group-hover:text-white transition-colors" />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Logout Button */}
-                      <div className="px-4 pb-10">
-                        <button onClick={() => setView('feed')} className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-red-500/10 text-red-500 font-bold hover:bg-red-500/20 transition-colors border border-red-500/20">
-                          <LogOut size={18} /> Log Out
-                        </button>
-                      </div>
-
-                    </div>
-                    <BottomNav />
-                  </div>
-                )}
-
-                {view === 'voiceCall' && (
-                  <div className="flex flex-col h-full w-full bg-black relative overflow-hidden">
-                    {/* Blurred Background Overlay */}
-                    <div className="absolute inset-0 z-0">
-                      <img src={currentProfile.image} alt="Background" className="w-full h-full object-cover opacity-30 blur-3xl scale-125" />
-                      <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/90" />
-                    </div>
-
-                    {/* Header Area */}
-                    <div className="relative z-10 px-4 py-8 flex justify-between items-center">
-                      <button onClick={() => setView('feed')} className="text-white p-3 bg-white/10 backdrop-blur-md rounded-full hover:bg-white/20 transition border border-white/5">
-                        <ChevronLeft size={24} />
-                      </button>
-                      <div className="flex items-center gap-2 bg-white/5 backdrop-blur-xl px-4 py-2 rounded-full border border-white/10 shadow-lg">
-                        <Lock size={12} className="text-green-400" />
-                        <span className="text-white/90 text-[10px] font-bold tracking-widest uppercase">End-to-End Encrypted</span>
-                      </div>
-                      <div className="w-12" /> {/* Spacer to balance header */}
-                    </div>
-
-                    {/* Center Content: Avatar & Status */}
-                    <div className="relative z-10 flex-1 flex flex-col items-center justify-center -mt-16">
-                      <div className="relative mb-8">
-                        {/* Pulse Rings */}
-                        <div className="absolute inset-0 bg-green-500/20 rounded-full animate-ping scale-[1.7]" style={{ animationDuration: '3s' }} />
-                        <div className="absolute inset-0 bg-green-500/30 rounded-full animate-ping scale-[1.3]" style={{ animationDuration: '2s', animationDelay: '0.5s' }} />
-                        
-                        {/* Avatar */}
-                        <div className="relative w-40 h-40 rounded-full p-1.5 bg-gradient-to-tr from-green-400 to-emerald-600 shadow-[0_0_50px_rgba(52,211,153,0.3)] z-10">
-                          <img 
-                            src={currentProfile.image} 
-                            alt={currentProfile.name} 
-                            className="w-full h-full rounded-full object-cover border-4 border-black" 
-                          />
-                        </div>
-                      </div>
-
-                      <h2 className="text-4xl font-black text-white tracking-tight shadow-black drop-shadow-2xl mb-3">
-                        {currentProfile.name}
-                      </h2>
-                      <div className="flex items-center gap-2 px-4 py-1.5 bg-black/40 backdrop-blur-md rounded-full border border-white/5">
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                        <span className="text-green-400 font-mono text-lg tracking-widest font-medium">
-                          02:14
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Bottom Controls */}
-                    <div className="relative z-10 pb-16 pt-8 px-8 flex justify-center gap-8 items-center">
-                      <button className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-xl flex items-center justify-center text-white hover:bg-white/20 transition border border-white/10 shadow-lg">
-                        <Volume2 size={24} />
-                      </button>
-                      
-                      <button className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-xl flex items-center justify-center text-white hover:bg-white/20 transition border border-white/10 shadow-lg">
-                        <MicOff size={24} />
-                      </button>
-
-                      <button 
-                        onClick={() => setView('feed')} 
-                        className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center text-white shadow-[0_0_25px_rgba(239,68,68,0.5)] transition transform hover:scale-105"
-                      >
-                        <PhoneOff size={28} />
-                      </button>
-                    </div>
-                  </div>
-                )}
-
+                </div>
+                <BottomNav />
               </div>
-            </div>
-          );
-        }
+            )}
 
-        const root = createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
+            {view === 'account' && (
+              <div className="flex flex-col h-full w-full bg-[#0a0a0a]">
+                <div className="px-4 py-4 flex justify-between items-center border-b border-white/5 bg-neutral-900/40 backdrop-blur-md shrink-0">
+                  <h1 className="text-xl font-black italic tracking-tighter">
+                    <span className="text-pink-500">PIXEL</span>
+                    <span className="text-cyan-400">CRUSH</span>
+                    <span className="text-white text-[13px]">.ai</span>
+                  </h1>
+                  <button
+                    onClick={() => setView('plans')}
+                    className="flex items-center gap-2 bg-neutral-900/80 backdrop-blur-md border border-neutral-700 px-3 py-1.5 rounded-full"
+                  >
+                    <Crown size={14} className="text-pink-400" />
+                    <span className="text-white font-bold text-[11px]">{currentPlan}</span>
+                  </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto pb-8 scrollbar-hide">
+
+                  <div className="px-4 pt-10 pb-8 flex flex-col items-center border-b border-white/5">
+                    <div className="w-32 h-32 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 p-1 mb-5">
+                      <div className="w-full h-full rounded-full bg-neutral-900 border-4 border-black flex items-center justify-center overflow-hidden">
+                        <User size={56} className="text-neutral-500" />
+                      </div>
+                    </div>
+                    <h2 className="text-3xl font-black tracking-tight text-white mb-1">GuestUser_992</h2>
+                    <p className="text-neutral-400 text-[15px] mb-6">user992@pixelcrush.ai</p>
+                    <button className="px-10 py-3 rounded-full bg-neutral-800 text-white text-[15px] font-bold hover:bg-neutral-700 transition-all border border-white/10">
+                      Edit Profile
+                    </button>
+                  </div>
+
+                  {/* Current Plan + Full Usage */}
+                  <div className="px-4 py-6">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-bold text-white">Plans & Usage</h3>
+                      <button
+                        onClick={() => setView('plans')}
+                        className="flex items-center gap-1.5 px-5 py-2 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white text-[15px] font-bold"
+                      >
+                        <Crown size={16} className="text-white fill-white" />
+                        Manage
+                      </button>
+                    </div>
+
+                    <div className="bg-neutral-900/60 border border-purple-500/30 rounded-3xl p-5 backdrop-blur-sm relative overflow-hidden">
+                      <div className="absolute -right-10 -top-10 w-32 h-32 bg-purple-600/10 rounded-full blur-2xl pointer-events-none" />
+
+                      <div className="flex items-center justify-between mb-5">
+                        <div className="flex items-center gap-2">
+                          <Crown size={20} className="text-purple-400" />
+                          <span className="text-white font-bold text-lg">{currentPlan} Plan</span>
+                        </div>
+                        <span className="text-xs text-neutral-400">Renews {renewalDate}</span>
+                      </div>
+
+                      <div className="flex flex-col gap-4 relative z-10">
+                        <ProgressRow label="Messages" used={usage.messages} total={planMeta.allowances.messages} compact />
+                        <ProgressRow label="Images" used={usage.images} total={planMeta.allowances.images} compact />
+                        <ProgressRow label="Video Moments" used={usage.videos} total={planMeta.allowances.videos} compact />
+                        <ProgressRow label="Voice Mins" used={usage.voiceMins} total={planMeta.allowances.voiceMins} compact />
+                        <ProgressRow label="TTS Characters" used={usage.ttsChars} total={planMeta.allowances.ttsChars} compact />
+                      </div>
+
+                      <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-center text-xs">
+                        <span className="text-neutral-400">Today’s voice cap</span>
+                        <span className="text-white font-medium">{voiceDailyUsed}/{voiceDailyCap} mins</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Settings */}
+                  <div className="px-4 pb-6">
+                    <h3 className="text-sm font-bold text-neutral-500 uppercase tracking-wider mb-3 px-2">Settings</h3>
+                    <div className="bg-neutral-900/40 rounded-3xl border border-white/5 overflow-hidden backdrop-blur-sm">
+
+                      <div className="flex items-center justify-between p-4 border-b border-white/5 hover:bg-white/5 cursor-pointer transition-colors group">
+                        <div className="flex items-center gap-3">
+                          <div className="bg-blue-500/20 p-2 rounded-xl text-blue-400"><UserCircle size={20} /></div>
+                          <span className="text-white font-medium">Account Details</span>
+                        </div>
+                        <ChevronRight size={18} className="text-neutral-500 group-hover:text-white transition-colors" />
+                      </div>
+
+                      <div className="flex items-center justify-between p-4 border-b border-white/5 hover:bg-white/5 cursor-pointer transition-colors group">
+                        <div className="flex items-center gap-3">
+                          <div className="bg-pink-500/20 p-2 rounded-xl text-pink-400"><Bell size={20} /></div>
+                          <span className="text-white font-medium">Notifications</span>
+                        </div>
+                        <ChevronRight size={18} className="text-neutral-500 group-hover:text-white transition-colors" />
+                      </div>
+
+                      <div className="flex items-center justify-between p-4 border-b border-white/5 hover:bg-white/5 cursor-pointer transition-colors group">
+                        <div className="flex items-center gap-3">
+                          <div className="bg-green-500/20 p-2 rounded-xl text-green-400"><Shield size={20} /></div>
+                          <div>
+                            <span className="text-white font-medium block">Privacy & Safety</span>
+                            <span className="text-[10px] text-neutral-400">Strictly SFW • Explicit content not supported</span>
+                          </div>
+                        </div>
+                        <ChevronRight size={18} className="text-neutral-500 group-hover:text-white transition-colors" />
+                      </div>
+
+                      <div className="flex items-center justify-between p-4 hover:bg-white/5 cursor-pointer transition-colors group">
+                        <div className="flex items-center gap-3">
+                          <div className="bg-yellow-500/20 p-2 rounded-xl text-yellow-400"><CreditCard size={20} /></div>
+                          <span className="text-white font-medium">Billing & Payment Methods</span>
+                        </div>
+                        <ChevronRight size={18} className="text-neutral-500 group-hover:text-white transition-colors" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Support */}
+                  <div className="px-4 pb-6">
+                    <h3 className="text-sm font-bold text-neutral-500 uppercase tracking-wider mb-3 px-2">Support</h3>
+                    <div className="bg-neutral-900/40 rounded-3xl border border-white/5 overflow-hidden backdrop-blur-sm">
+                      <div className="flex items-center justify-between p-4 border-b border-white/5 hover:bg-white/5 cursor-pointer transition-colors group">
+                        <div className="flex items-center gap-3">
+                          <div className="bg-purple-500/20 p-2 rounded-xl text-purple-400"><HelpCircle size={20} /></div>
+                          <span className="text-white font-medium">Help Center & FAQ</span>
+                        </div>
+                        <ChevronRight size={18} className="text-neutral-500 group-hover:text-white transition-colors" />
+                      </div>
+                      <div className="flex items-center justify-between p-4 hover:bg-white/5 cursor-pointer transition-colors group">
+                        <div className="flex items-center gap-3">
+                          <div className="bg-neutral-500/20 p-2 rounded-xl text-neutral-400"><Settings size={20} /></div>
+                          <span className="text-white font-medium">Terms of Service</span>
+                        </div>
+                        <ChevronRight size={18} className="text-neutral-500 group-hover:text-white transition-colors" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="px-4 pb-10">
+                    <button onClick={() => setView('feed')} className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-red-500/10 text-red-500 font-bold hover:bg-red-500/20 transition-colors border border-red-500/20">
+                      <LogOut size={18} /> Log Out
+                    </button>
+                  </div>
+                </div>
+                <BottomNav />
+              </div>
+            )}
+
+            {view === 'voiceCall' && (
+              <div className="flex flex-col h-full w-full bg-black relative overflow-hidden">
+                <div className="absolute inset-0 z-0">
+                  <img src={currentProfile.image} alt="Background" className="w-full h-full object-cover opacity-30 blur-3xl scale-125" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/90" />
+                </div>
+
+                <div className="relative z-10 px-4 py-8 flex justify-between items-center">
+                  <button onClick={() => setView('feed')} className="text-white p-3 bg-white/10 backdrop-blur-md rounded-full hover:bg-white/20 transition border border-white/5">
+                    <ChevronLeft size={24} />
+                  </button>
+                  <div className="flex items-center gap-2 bg-white/5 backdrop-blur-xl px-4 py-2 rounded-full border border-white/10 shadow-lg">
+                    <ShieldCheck size={12} className="text-green-400" />
+                    <span className="text-white/90 text-[10px] font-bold tracking-widest uppercase">Secure Connection</span>
+                  </div>
+                  <div className="w-12" />
+                </div>
+
+                <div className="relative z-10 px-4 -mt-3">
+                  <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 flex items-center justify-between text-xs backdrop-blur-md">
+                    <span className="text-neutral-300">Voice this month</span>
+                    <span className="text-white font-semibold">{usage.voiceMins}/{planMeta.allowances.voiceMins} min</span>
+                  </div>
+                  <div className="mt-2 bg-white/5 border border-white/10 rounded-xl px-3 py-2 flex items-center justify-between text-xs backdrop-blur-md">
+                    <span className="text-neutral-300">Today’s voice cap</span>
+                    <span className="text-white font-semibold">{voiceDailyUsed}/{voiceDailyCap} min</span>
+                  </div>
+                </div>
+
+                <div className="relative z-10 flex-1 flex flex-col items-center justify-center -mt-10">
+                  <div className="relative mb-8">
+                    <div className="absolute inset-0 bg-green-500/20 rounded-full animate-ping scale-[1.7]" style={{ animationDuration: '3s' }} />
+                    <div className="absolute inset-0 bg-green-500/30 rounded-full animate-ping scale-[1.3]" style={{ animationDuration: '2s', animationDelay: '0.5s' }} />
+
+                    <div className="relative w-40 h-40 rounded-full p-1.5 bg-gradient-to-tr from-green-400 to-emerald-600 shadow-[0_0_50px_rgba(52,211,153,0.3)] z-10">
+                      <img src={currentProfile.image} alt={currentProfile.name} className="w-full h-full rounded-full object-cover border-4 border-black" />
+                    </div>
+                  </div>
+
+                  <h2 className="text-4xl font-black text-white tracking-tight mb-3">{currentProfile.name}</h2>
+                  <div className="flex items-center gap-2 px-4 py-1.5 bg-black/40 backdrop-blur-md rounded-full border border-white/5">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                    <span className="text-green-400 font-mono text-lg tracking-widest font-medium">02:14</span>
+                  </div>
+                </div>
+
+                <div className="relative z-10 pb-16 pt-8 px-8 flex justify-center gap-8 items-center">
+                  <button className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-xl flex items-center justify-center text-white hover:bg-white/20 transition border border-white/10">
+                    <Volume2 size={24} />
+                  </button>
+
+                  <button className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-xl flex items-center justify-center text-white hover:bg-white/20 transition border border-white/10">
+                    <MicOff size={24} />
+                  </button>
+
+                  <button
+                    onClick={() => setView('feed')}
+                    className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center text-white shadow-[0_0_25px_rgba(239,68,68,0.5)] transition transform hover:scale-105"
+                  >
+                    <PhoneOff size={28} />
+                  </button>
+                </div>
+              </div>
+            )}
+
+          </div>
+        </div>
+      );
+    }
+
+    const root = createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
 </body>
 </html>
