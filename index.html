@@ -47,45 +47,49 @@
     } = lucideIcons;
 
     // ----------------------------
-    // Single source of truth (plans)
+    // Plans aligned to attached spreadsheet
     // ----------------------------
     const PLAN_CONFIG = {
-      Free: {
-        name: "Free",
+      Starter: {
+        key: "Starter",
+        name: "Starter (post-onboarding)",
         price: 0,
         accent: "neutral",
-        allowances: { messages: 1500, images: 25, videos: 0, voiceMins: 5, ttsChars: 4000 },
+        allowances: { messages: 1500, images: 25, videos: 0, voiceMins: 10, ttsChars: 4000 },
         cta: "Select Plan",
         featured: false,
       },
-      Plus: {
-        name: "Plus",
+      Core: {
+        key: "Core",
+        name: "Core",
         price: 14.99,
         accent: "pink",
         allowances: { messages: 5000, images: 200, videos: 0, voiceMins: 30, ttsChars: 20000 },
         cta: "Select Plan",
         featured: false,
       },
-      Close: {
-        name: "Close",
+      Premium: {
+        key: "Premium",
+        name: "Premium",
         price: 39.99,
         accent: "purple",
-        allowances: { messages: 10000, images: 500, videos: 5, voiceMins: 120, ttsChars: 50000 },
+        allowances: { messages: 10000, images: 500, videos: 5, voiceMins: 90, ttsChars: 50000 },
         cta: "Upgrade Now",
         featured: true,
       },
-      Inner: {
-        name: "Inner",
+      Ultra: {
+        key: "Ultra",
+        name: "Ultra",
         price: 89.99,
         accent: "yellow",
-        allowances: { messages: 20000, images: 1000, videos: 10, voiceMins: 180, ttsChars: 100000 },
+        allowances: { messages: 20000, images: 1000, videos: 10, voiceMins: 150, ttsChars: 100000 },
         cta: "Select Plan",
         featured: false,
       }
     };
 
-    const PLAN_ORDER = ["Free", "Plus", "Close", "Inner"];
-    const tierRank = { Free: 0, Plus: 1, Close: 2, Inner: 3 };
+    const PLAN_ORDER = ["Starter", "Core", "Premium", "Ultra"];
+    const tierRank = { Starter: 0, Core: 1, Premium: 2, Ultra: 3 };
 
     function formatNumber(n) {
       return n.toLocaleString();
@@ -143,23 +147,23 @@
         { id: 'c5', title: "Chapter 5", messages: 1, date: "Feb 6", isCurrent: false },
       ];
 
-      // Gallery uses entitlement/usage gating, not token costs
+      // Gallery gating uses plan access / limits (no tokens)
       const galleryList = [
         { id: 'g1', type: 'unlocked', img: profiles[0].image, persona: 'Lila', isVideo: true },
-        { id: 'g2', type: 'locked', img: profiles[1].image, persona: 'Aria', requiredTier: 'Plus', lockReason: 'Plan required' },
+        { id: 'g2', type: 'locked', img: profiles[1].image, persona: 'Aria', requiredTier: 'Core', lockReason: 'Plan required' },
         { id: 'g3', type: 'unlocked', img: profiles[2].image, persona: 'Hannah', isVideo: true },
-        { id: 'g4', type: 'locked', img: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80', persona: 'Lila', requiredTier: 'Close', lockReason: 'Plan required' },
+        { id: 'g4', type: 'locked', img: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80', persona: 'Lila', requiredTier: 'Premium', lockReason: 'Plan required' },
         { id: 'g5', type: 'locked', img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80', persona: 'Hannah', isVideo: true, lockReason: 'Monthly video limit reached' },
         { id: 'g6', type: 'unlocked', img: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80', persona: 'Madison' },
       ];
 
-      // Mock logged-in user state for prototype
-      const [currentPlan, setCurrentPlan] = useState("Close");
+      // Mock logged-in state for prototype
+      const [currentPlan, setCurrentPlan] = useState("Premium");
       const [renewalDate] = useState("Mar 12");
       const [voiceDailyCap] = useState(10);
       const [voiceDailyUsed] = useState(3);
 
-      const [usage, setUsage] = useState({
+      const [usage] = useState({
         messages: 8240,
         images: 120,
         videos: 4,
@@ -251,7 +255,7 @@
 
           <div className="flex-1 overflow-y-auto px-4 pt-5 pb-8 scrollbar-hide flex flex-col gap-6">
 
-            {/* Trust/SFW banner */}
+            {/* SFW banner */}
             <div className="bg-emerald-500/10 border border-emerald-400/20 rounded-2xl p-4 backdrop-blur-sm">
               <div className="flex items-start gap-3">
                 <ShieldCheck size={18} className="text-emerald-400 mt-0.5 shrink-0" />
@@ -264,7 +268,7 @@
               </div>
             </div>
 
-            {/* Usage policy / cap behavior */}
+            {/* Usage policy (kept), middle current-plan box removed */}
             <div className="bg-neutral-900/40 border border-white/10 rounded-3xl p-5 backdrop-blur-sm">
               <div className="flex items-center gap-2 mb-3">
                 <Clock3 size={16} className="text-cyan-400" />
@@ -274,7 +278,7 @@
                 <li>• Monthly allowances reset on your billing date.</li>
                 <li>• Voice calls also use a daily safety cap to prevent overuse.</li>
                 <li>• When you hit a limit, you can upgrade or wait for your reset.</li>
-                <li>• Video Moments are limited by plan. Optional add-on video packs may be offered later.</li>
+                <li>• Optional one-off video packs may be offered later if enabled.</li>
               </ul>
             </div>
 
@@ -293,8 +297,7 @@
                   const tier = PLAN_CONFIG[tierKey];
                   const isCurrent = currentPlan === tierKey;
 
-                  const cardBase =
-                    "rounded-3xl p-5 backdrop-blur-sm relative overflow-hidden transition-all";
+                  const cardBase = "rounded-3xl p-5 backdrop-blur-sm relative overflow-hidden transition-all";
                   let cardClasses = "bg-neutral-900/40 border border-white/10";
                   let titleClass = "text-white";
                   let btnClass = "bg-white/10 text-white hover:bg-white/20";
@@ -346,7 +349,7 @@
                         onClick={() => setCurrentPlan(tierKey)}
                         className={`w-full py-3 rounded-xl font-bold transition-colors ${btnClass} ${tier.featured ? 'transition-transform' : ''}`}
                       >
-                        {isCurrent && tierKey !== "Free" ? "Current Plan" : tier.cta}
+                        {isCurrent && tierKey !== "Starter" ? "Current Plan" : tier.cta}
                       </button>
                     </div>
                   );
@@ -691,8 +694,8 @@
                         lockTitle = "Video limit reached";
                         lockCta = "View Plans";
                       } else if (item.requiredTier && !tierAllowed) {
-                        lockTitle = `${item.requiredTier} Plan`;
-                        lockCta = `Upgrade`;
+                        lockTitle = `${PLAN_CONFIG[item.requiredTier]?.name || item.requiredTier} required`;
+                        lockCta = "Upgrade";
                       } else if (item.requiredTier && tierAllowed) {
                         lockTitle = "Unavailable";
                         lockCta = "View Plans";
@@ -774,7 +777,7 @@
                     className="flex items-center gap-2 bg-neutral-900/80 backdrop-blur-md border border-neutral-700 px-3 py-1.5 rounded-full"
                   >
                     <Crown size={14} className="text-pink-400" />
-                    <span className="text-white font-bold text-[11px]">{currentPlan}</span>
+                    <span className="text-white font-bold text-[11px]">{planMeta.name}</span>
                   </button>
                 </div>
 
@@ -793,7 +796,7 @@
                     </button>
                   </div>
 
-                  {/* Current Plan + Full Usage */}
+                  {/* Account page keeps explicit usage (as requested) */}
                   <div className="px-4 py-6">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-lg font-bold text-white">Plans & Usage</h3>
@@ -812,7 +815,7 @@
                       <div className="flex items-center justify-between mb-5">
                         <div className="flex items-center gap-2">
                           <Crown size={20} className="text-purple-400" />
-                          <span className="text-white font-bold text-lg">{currentPlan} Plan</span>
+                          <span className="text-white font-bold text-lg">{planMeta.name}</span>
                         </div>
                         <span className="text-xs text-neutral-400">Renews {renewalDate}</span>
                       </div>
@@ -832,7 +835,6 @@
                     </div>
                   </div>
 
-                  {/* Settings */}
                   <div className="px-4 pb-6">
                     <h3 className="text-sm font-bold text-neutral-500 uppercase tracking-wider mb-3 px-2">Settings</h3>
                     <div className="bg-neutral-900/40 rounded-3xl border border-white/5 overflow-hidden backdrop-blur-sm">
@@ -874,7 +876,6 @@
                     </div>
                   </div>
 
-                  {/* Support */}
                   <div className="px-4 pb-6">
                     <h3 className="text-sm font-bold text-neutral-500 uppercase tracking-wider mb-3 px-2">Support</h3>
                     <div className="bg-neutral-900/40 rounded-3xl border border-white/5 overflow-hidden backdrop-blur-sm">
